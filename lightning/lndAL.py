@@ -1,8 +1,7 @@
 import codecs
 import grpc
 import os
-import rpc_pb2 as ln
-import rpc_pb2_grpc as lnrpc
+from lightning import rpc_pb2_grpc as lnrpc, rpc_pb2 as ln
 
 
 class LndAL:

@@ -1,4 +1,5 @@
-import lndAL
+from lightning import lndAL
+
 
 class HomeNode(object):
 

@@ -1,4 +1,4 @@
-import lndAL
+from lightning import lndAL
 
 
 class ChannelBalance(object):

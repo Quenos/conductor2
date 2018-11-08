@@ -1,6 +1,5 @@
 import unittest
-import hop
-import route
+from lightning import hop, route
 
 
 class RouteUnitTest(unittest.TestCase):

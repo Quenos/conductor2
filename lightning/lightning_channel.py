@@ -1,4 +1,4 @@
-import lndAL
+from lightning import lndAL
 from collections import defaultdict
 from enum import Enum
 

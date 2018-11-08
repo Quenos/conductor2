@@ -1,8 +1,5 @@
 import sys
-import lightning_node
-import lightning_channel
-import wallet_balance
-import channel_balance
+from lightning import lightning_node, lightning_channel, channel_balance, wallet_balance
 from stylesheets.dark_theme import DarkTheme
 
 from enum import Enum

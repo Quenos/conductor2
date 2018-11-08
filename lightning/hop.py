@@ -1,5 +1,3 @@
-import lndAL
-
 class Hop:
 
     def __init__(

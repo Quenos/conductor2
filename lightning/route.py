@@ -1,6 +1,4 @@
-import lndAL
-import hop
-import rpc_pb2
+from lightning import lndAL, hop, rpc_pb2
 
 
 class Route:

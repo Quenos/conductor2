@@ -1,5 +1,5 @@
 import time
-import lndAL
+from lightning import lndAL
 import channel
 from collections import defaultdict
 
