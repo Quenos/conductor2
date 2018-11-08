@@ -52,9 +52,17 @@ class NodeInstruction(Instruction):
     _offset_y = Instruction.MARGIN
     _location = Location.BOTTOM
 
-    def __init__(self, node, pen=None):
+    def __init__(self, node, pen=None, chan_id=0):
         super().__init__(pen)
+        self._window_position = None
+        self.chan_id = chan_id
         self._node = node
+
+    def _set_window_position(self, pos_x, pos_y, width, height):
+        self._window_position = QtCore.QRect(pos_x, pos_y, width, height)
+
+    def get_window_position(self):
+        return self._window_position
 
     def paint(self, widget, painter):
         super().paint(widget, painter)
@@ -98,7 +106,8 @@ class NodeInstruction(Instruction):
         rect_lu_x = NodeInstruction._offset_x
         rect_lu_y = widget.height() - NodeInstruction._offset_y - rect_height - Instruction.MARGIN
 
-        # draw the node rectangle and write the name of the node in it
+        # Safe and draw the node rectangle and write the name of the node in it
+        self._set_window_position(rect_lu_x, rect_lu_y, rect_width, rect_height)
         painter.drawRect(rect_lu_x, rect_lu_y, rect_width, rect_height)
         painter.drawText(rect_lu_x + 10, rect_lu_y + text_height, self._node.text)
 

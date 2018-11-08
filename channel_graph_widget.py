@@ -6,9 +6,9 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 class ChannelGraphWidget(QtWidgets.QWidget):
     channels = lightning_channel.Channels()
 
-    def __init__(self):
+    def __init__(self, channel_info_widget):
         super().__init__()
-        # self.resize(1752, 916)
+        self.channel_info_widget = channel_info_widget
 
         # draw center node (HomeNode - your node)
         home_node = lightning_node.HomeNode()
@@ -29,7 +29,7 @@ class ChannelGraphWidget(QtWidgets.QWidget):
                 colour = QtGui.QColor(int(channel.remote_node_colour[1:], 16))
                 pen = QtGui.QPen(colour, 4)
                 node = Node(channel.remote_node_alias)
-                instruction = NodeInstruction(node, pen)
+                instruction = NodeInstruction(node, pen, channel.chan_id)
                 ChannelGraphPicture.instructions.append(instruction)
         self.show()
 
@@ -37,3 +37,11 @@ class ChannelGraphWidget(QtWidgets.QWidget):
         qp = QtGui.QPainter(self)
         for instruction in ChannelGraphPicture.instructions:
             instruction.paint(self, qp)
+
+    def mousePressEvent(self, event):
+        for i in ChannelGraphPicture.instructions:
+            if isinstance(i, NodeInstruction):
+                if i.get_window_position().contains(event.pos()):
+                    self.channel_info_widget.update_info(i.chan_id)
+
+

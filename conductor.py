@@ -20,15 +20,15 @@ class MainWindow(QtWidgets.QMainWindow):
         centralwidget.setObjectName("centralwidget")
         self.setCentralWidget(centralwidget)
 
-        self.dockGraphWidget = QtWidgets.QDockWidget("Lightning Channel Graph", self)
-        self.dockGraphWidget.setMinimumSize(QtCore.QSize(1800, 600))
-        self.dockGraphWidget.setObjectName("dockGraphWidget")
-        self.dockGraphWidget.setWidget(ChannelGraphWidget())
-        self.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.dockGraphWidget)
-
         # Channel List needs access to the ChannelInfoWidget to display info
         # create the channel info widget to be used by the channel list
         self.channelInfoWidget = ChannelInfoWidget()
+
+        self.dockGraphWidget = QtWidgets.QDockWidget("Lightning Channel Graph", self)
+        self.dockGraphWidget.setMinimumSize(QtCore.QSize(1800, 600))
+        self.dockGraphWidget.setObjectName("dockGraphWidget")
+        self.dockGraphWidget.setWidget(ChannelGraphWidget(self.channelInfoWidget))
+        self.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.dockGraphWidget)
 
         self.dockListWidget = QtWidgets.QDockWidget("Lightning Channel List", self)
         self.dockListWidget.setMinimumSize(QtCore.QSize(1100, 450))
