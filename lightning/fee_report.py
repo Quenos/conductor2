@@ -1,5 +1,5 @@
 # Copyright 2018 <Quenos Blockchain R&D KFT>
-
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 # documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
 # rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
@@ -16,9 +16,25 @@
 from lightning import lndAL
 
 
-class WalletBalance(object):
+class FeeReport(object):
     def __init__(self):
-        wallet_balance = lndAL.LndAL.wallet_balance()
-        self.total_balance = wallet_balance.total_balance
-        self.confirmed_balance = wallet_balance.confirmed_balance
-        self.unconfirmed_balance = wallet_balance.unconfirmed_balance
+        fee_report = lndAL.LndAL.get_fee_report()
+        self.channel_fees = []
+        for channel_fee in fee_report.channel_fees:
+            self.channel_fees.append(ChannelFee(channel_fee))
+        self.day_fee_sum = fee_report.day_fee_sum
+        self.week_fee_sum = fee_report.week_fee_sum
+        self.month_fee_sum = fee_report.month_fee_sum
+
+
+class ChannelFee(object):
+    def __init__(self, channel_fee):
+        self.chan_point = channel_fee.chan_point
+        self.base_fee_msat = channel_fee.base_fee_msat
+        self.fee_per_mil = channel_fee.fee_per_mil
+        self.fee_rate = channel_fee.fee_rate
+
+
+if __name__ == "__main__":
+    x = FeeReport()
+    print(x)

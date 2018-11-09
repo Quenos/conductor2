@@ -1,3 +1,18 @@
+# Copyright 2018 <Quenos Blockchain R&D KFT>
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to the following conditions:
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+# Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+# OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+
 from lightning import lightning_channel
 from PyQt5 import QtCore, QtWidgets, QtGui
 
@@ -6,6 +21,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
     def __init__(self, channel_id=0):
         super().__init__()
 
+        self.channel_id = channel_id
         self.channel_name_label = QtWidgets.QLabel(self)
         self.channel_name_label.setGeometry(QtCore.QRect(200, 0, 700, 80))
         font = QtGui.QFont()
@@ -16,6 +32,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.channel_name_label.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.channel_name_label.setAlignment(QtCore.Qt.AlignCenter)
         self.channel_name_label.setObjectName("channel_name_label")
+        self.channel_name_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
 
         self.formLayoutWidget = QtWidgets.QWidget(self)
         self.formLayoutWidget.setGeometry(QtCore.QRect(0, 80, 610, 431))
@@ -30,6 +47,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
         self.active_label = QtWidgets.QLabel(self.formLayoutWidget)
         self.active_label.setObjectName("active_label")
+        self.active_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.active_label)
 
         self.label_4 = QtWidgets.QLabel(self.formLayoutWidget)
@@ -38,6 +56,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
         self.channel_id_label = QtWidgets.QLabel(self.formLayoutWidget)
         self.channel_id_label.setObjectName("channel_id_label")
+        self.channel_id_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.channel_id_label)
 
         self.label_5 = QtWidgets.QLabel(self.formLayoutWidget)
@@ -46,6 +65,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
         self.capacity_label = QtWidgets.QLabel(self.formLayoutWidget)
         self.capacity_label.setObjectName("capacity_label")
+        self.capacity_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.capacity_label)
 
         self.label_6 = QtWidgets.QLabel(self.formLayoutWidget)
@@ -54,6 +74,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
         self.local_balance_label = QtWidgets.QLabel(self.formLayoutWidget)
         self.local_balance_label.setObjectName("local_balance_label")
+        self.local_balance_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.local_balance_label)
 
         self.label_7 = QtWidgets.QLabel(self.formLayoutWidget)
@@ -62,6 +83,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
         self.remote_balance_label = QtWidgets.QLabel(self.formLayoutWidget)
         self.remote_balance_label.setObjectName("remote_balance_label")
+        self.remote_balance_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.remote_balance_label)
 
         self.label_15 = QtWidgets.QLabel(self.formLayoutWidget)
@@ -70,6 +92,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
         self.commit_fee_label = QtWidgets.QLabel(self.formLayoutWidget)
         self.commit_fee_label.setObjectName("commit_fee_label")
+        self.commit_fee_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.commit_fee_label)
 
         self.label_16 = QtWidgets.QLabel(self.formLayoutWidget)
@@ -78,6 +101,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
         self.commit_weight_label = QtWidgets.QLabel(self.formLayoutWidget)
         self.commit_weight_label.setObjectName("commit_weight_label")
+        self.commit_weight_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.commit_weight_label)
 
         self.label_17 = QtWidgets.QLabel(self.formLayoutWidget)
@@ -86,6 +110,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
         self.fee_per_kw_label = QtWidgets.QLabel(self.formLayoutWidget)
         self.fee_per_kw_label.setObjectName("fee_per_kw_label")
+        self.fee_per_kw_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout.setWidget(7, QtWidgets.QFormLayout.FieldRole, self.fee_per_kw_label)
 
         self.formLayoutWidget_2 = QtWidgets.QWidget(self)
@@ -105,14 +130,17 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
         self.unsettled_balance_label = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.unsettled_balance_label.setObjectName("unsettled_balance_label")
+        self.unsettled_balance_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.unsettled_balance_label)
 
         self.tot_sat_sent_label = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.tot_sat_sent_label.setObjectName("tot_sat_sent_label")
+        self.tot_sat_sent_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.tot_sat_sent_label)
 
         self.tot_sat_received_label = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.tot_sat_received_label.setObjectName("tot_sat_received_label")
+        self.tot_sat_received_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.tot_sat_received_label)
 
         self.label_20 = QtWidgets.QLabel(self.formLayoutWidget_2)
@@ -125,6 +153,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
         self.num_updates_label = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.num_updates_label.setObjectName("num_updates_label")
+        self.num_updates_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout_2.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.num_updates_label)
 
         self.label_29 = QtWidgets.QLabel(self.formLayoutWidget_2)
@@ -133,6 +162,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
         self.pending_htlcs_label = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.pending_htlcs_label.setObjectName("pending_htlcs_label")
+        self.pending_htlcs_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout_2.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.pending_htlcs_label)
 
         self.label_31 = QtWidgets.QLabel(self.formLayoutWidget_2)
@@ -141,6 +171,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
         self.csv_label = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.csv_label.setObjectName("csv_label")
+        self.csv_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout_2.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.csv_label)
 
         self.label_33 = QtWidgets.QLabel(self.formLayoutWidget_2)
@@ -149,6 +180,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
         self.private_label = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.private_label.setObjectName("private_label")
+        self.private_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout_2.setWidget(7, QtWidgets.QFormLayout.FieldRole, self.private_label)
 
         self.formLayoutWidget_3 = QtWidgets.QWidget(self)
@@ -175,6 +207,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         font.setPointSize(9.5)
         self.channel_point_label.setFont(font)
         self.channel_point_label.setObjectName("channel_point_label")
+        self.channel_point_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout_3.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.channel_point_label)
 
         self.remote_pubkey_label = QtWidgets.QLabel(self.formLayoutWidget_3)
@@ -182,14 +215,28 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         font.setPointSize(9.5)
         self.remote_pubkey_label.setFont(font)
         self.remote_pubkey_label.setObjectName("remote_pubkey_label")
+        self.remote_pubkey_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout_3.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.remote_pubkey_label)
 
         self.uri_label = QtWidgets.QLabel(self.formLayoutWidget_3)
         font = QtGui.QFont()
         font.setPointSize(9.5)
         self.uri_label.setFont(font)
-        self.uri_label.setObjectName("remote_pubkey_label")
+        self.uri_label.setObjectName("uri_label")
+        self.uri_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout_3.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.uri_label)
+
+        self.reconnect_push_button = QtWidgets.QPushButton(self)
+        self.reconnect_push_button.setGeometry(QtCore.QRect(900, 690, 250, 48))
+        self.reconnect_push_button.setObjectName("reconnect_push_button")
+        self.reconnect_push_button.setText("Reconnect")
+        self.reconnect_push_button.clicked.connect(self.reconnect_channel)
+
+        self.close_channel_push_button = QtWidgets.QPushButton(self)
+        self.close_channel_push_button.setGeometry(QtCore.QRect(50, 690, 250, 48))
+        self.close_channel_push_button.setObjectName("close_channel_push_button")
+        self.close_channel_push_button.setText("Close Channel")
+        self.close_channel_push_button.clicked.connect(self.close_channel)
 
         self.channel_name_label.setText("TextLabel")
         self.label.setText("Active:")
@@ -229,14 +276,19 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.label_42.setText("Uri:")
         self.uri_label.setText("TextLabel")
 
-        if channel_id != 0:
+        if self.channel_id != 0:
             self.update_info(channel_id)
         # don't show the object yet, because it is forward created
         # in order for the channel list to access this object
         # to update info
 
     def update_info(self, channel_id):
+        self.channel_id = channel_id
         channel = lightning_channel.Channels.channel_index[channel_id][0]
+        if channel.channel_state == lightning_channel.Channel.ChannelState.ACTIVE:
+            self.reconnect_push_button.hide()
+        else:
+            self.reconnect_push_button.show()
         self.channel_name_label.setText(channel.remote_node_alias)
         self.active_label.setText(str(channel.channel_state))
         self.remote_pubkey_label.setText(channel.remote_pubkey)
@@ -258,3 +310,14 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.csv_label.setText(str(channel.csv_delay))
         self.private_label.setText(str(channel.private))
         self.uri_label.setText(channel.remote_uri)
+
+    def reconnect_channel(self, event):
+        try:
+            channel = lightning_channel.Channels.channel_index[self.channel_id][0]
+            channel.reconnect()
+        except IOError:
+            mb = QtWidgets.QMessageBox()
+            mb.about(self, "Reconnect error", "Unable to reconnect with node. Try again later")
+
+    def close_channel(self, event):
+        print('close channel stub')

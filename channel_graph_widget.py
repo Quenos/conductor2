@@ -1,5 +1,20 @@
 from instruction import CenterNode, CenterNodeInstruction, ChannelGraphPicture, Node, NodeInstruction
 from lightning import lightning_node, lightning_channel
+# Copyright 2018 <Quenos Blockchain R&D KFT>
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to the following conditions:
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+# Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+# OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 
@@ -11,7 +26,12 @@ class ChannelGraphWidget(QtWidgets.QWidget):
         self.channel_info_widget = channel_info_widget
 
         # draw center node (HomeNode - your node)
-        home_node = lightning_node.HomeNode()
+        try:
+            home_node = lightning_node.HomeNode()
+        except IOError:
+            mb = QtWidgets.QMessageBox()
+            mb.about(self, "Lightning network error", "Check the network settings and connection")
+            exit(-1)
         center_node = CenterNode(home_node.name)
         colour = QtGui.QColor(QtCore.Qt.darkGreen)
         pen = QtGui.QPen(colour, 4)

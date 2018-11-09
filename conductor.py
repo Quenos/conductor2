@@ -1,13 +1,32 @@
+# Copyright 2018 <Quenos Blockchain R&D KFT>
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+# documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so, subject to the following conditions:
+# The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+# Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+# WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS
+# OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+# OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+
 import sys
 
 from balance_info_widget import BalanceInfoWidget
 from channel_graph_widget import ChannelGraphWidget
 from channel_info_widget import ChannelInfoWidget
 from channel_list_widget import ChannelListWidget
-from lightning import lightning_channel
+from settings_widget import SettingsDialog
 from stylesheets.dark_theme import DarkTheme
+from config.config import SystemConfiguration
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
+
+# TODO 3: Add channel policy update window
+# TODO 4: Add auto refresh every hour
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -15,13 +34,37 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.resize(3000, 1400)
+        self.system_config = SystemConfiguration()
+        try:
+            self.system_config.read_config()
+        except FileNotFoundError:
+            self.settings()
+
+        self.settings_dialog = None
+        self.resize(3000, 1700)
         centralwidget = QtWidgets.QWidget(self)
         centralwidget.setObjectName("centralwidget")
         self.setCentralWidget(centralwidget)
 
-        # Channel List needs access to the ChannelInfoWidget to display info
-        # create the channel info widget to be used by the channel list
+        exit_action = QtWidgets.QAction(QtGui.QIcon('exit.png'), '&Exit', self)
+        exit_action.setShortcut('Ctrl+Q')
+        exit_action.setStatusTip('Exit application')
+        exit_action.triggered.connect(QtWidgets.qApp.quit)
+
+        settings_action = QtWidgets.QAction(QtGui.QIcon('settings.png'), '&Settings', self)
+        settings_action.setShortcut('Ctrl+Shift+S')
+        settings_action.setStatusTip('Modify settings')
+        settings_action.triggered.connect(self.settings)
+
+        self.statusBar()
+
+        menubar = self.menuBar()
+        fileMenu = menubar.addMenu('&File')
+        fileMenu.addAction(exit_action)
+        fileMenu.addAction(settings_action)
+
+        # Channel List and Channel Graph need access to the ChannelInfoWidget to display info
+        # create the channel info widget to be used by the channel list and graph
         self.channelInfoWidget = ChannelInfoWidget()
 
         self.dockGraphWidget = QtWidgets.QDockWidget("Lightning Channel Graph", self)
@@ -52,6 +95,16 @@ class MainWindow(QtWidgets.QMainWindow):
         # of the object, the object can not show itself
         self.channelInfoWidget.show()
 
+    def settings(self):
+        self.settings_dialog = SettingsDialog()
+        self.settings_dialog.setModal(True)
+        self.settings_dialog.show()
+        self.settings_dialog.exec_()
+        self.system_config.admin_macaroon_directory = self.settings_dialog.admin_macaroon.text()
+        self.system_config.tls_cert_directory = self.settings_dialog.tls_cert.text()
+        self.system_config.lnd_rpc_address = self.settings_dialog.ip_lnd.text()
+        self.system_config.lnd_rpc_port = self.settings_dialog.port_lnd.text()
+        self.system_config.write_config()
 
 if __name__ == "__main__":
 
@@ -60,3 +113,4 @@ if __name__ == "__main__":
     w.setStyleSheet(DarkTheme.get_style_sheet())
     w.show()
     sys.exit(app.exec_())
+    exit(0)
