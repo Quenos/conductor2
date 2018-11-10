@@ -315,9 +315,22 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         try:
             channel = lightning_channel.Channels.channel_index[self.channel_id][0]
             channel.reconnect()
+            lightning_channel.Channels.read_channels()
+            self.update_info(self.channel_id)
+            if self.active_label.text() == 'INACTIVE':
+                mb = QtWidgets.QMessageBox()
+                mb.about(self, "Reconnect error", "Unable to reconnect with node. Try again later")
         except IOError:
             mb = QtWidgets.QMessageBox()
             mb.about(self, "Reconnect error", "Unable to reconnect with node. Try again later")
 
     def close_channel(self, event):
-        print('close channel stub')
+        channel = lightning_channel.Channels.channel_index[self.channel_id][0]
+        button_reply = QtWidgets.QMessageBox.question(self,
+                                                     'Close channel',
+                                                     "Do you realy want to close the channel?\n" +
+                                                     "This cannot be undone!!!",
+                                                     QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                                     QtWidgets.QMessageBox.No)
+        if button_reply == QtWidgets.QMessageBox.Yes:
+            channel.close_channel()

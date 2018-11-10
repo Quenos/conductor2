@@ -128,6 +128,12 @@ class OpenChannel(Channel):
     def reconnect(self):
         lndAL.LndAL.connect({'pubkey': self.remote_pubkey, 'host': self.remote_uri}, True)
 
+    def close_channel(self):
+        force = self.channel_state == Channel.ChannelState.INACTIVE
+        response = lndAL.LndAL.close_channel(self.channel_point, force=force)
+        for r in response:
+            x = r['close_pending']
+            print(x)
 
 class ClosedChannel(Channel):
     def __init__(self, channel):

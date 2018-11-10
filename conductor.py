@@ -22,6 +22,7 @@ from channel_list_widget import ChannelListWidget
 from settings_widget import SettingsDialog
 from stylesheets.dark_theme import DarkTheme
 from config.config import SystemConfiguration
+from lightning import test_lnd_connection
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
@@ -39,6 +40,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self.system_config.read_config()
         except FileNotFoundError:
             self.settings()
+
+        try:
+            test_lnd_connection.test_lnd_connection()
+        except IOError:
+            mb = QtWidgets.QMessageBox()
+            mb.about(self, "Connection error", "LND not reachable. Check settings and network and try again")
+            self.settings()
+            exit(-1)
 
         self.settings_dialog = None
         self.resize(3000, 1700)

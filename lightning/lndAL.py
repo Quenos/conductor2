@@ -236,12 +236,17 @@ class LndAL(object):
     @classmethod
     def close_channel(cls, channel_point, force=False, target_conf=0, sat_per_byte=0):
         try:
+            response = []
             cls.get_rpc_data()
             request = ln.CloseChannelRequest(channel_point=channel_point,
                                              force=force,
                                              target_conf=target_conf,
                                              sat_per_byte=sat_per_byte)
-            return cls.stub.CloseChannel(request, metadata=[('macaroon', cls.macaroon)])
+            for r in cls.stub.CloseChannel(request, metadata=[('macaroon', cls.macaroon)]):
+                response.append(r)
+                if r:
+                    break
+            return response
         except:
             raise IOError('close channel')
 
