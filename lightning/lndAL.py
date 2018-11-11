@@ -225,6 +225,15 @@ class LndAL(object):
             raise IOError('get fee report')
 
     @classmethod
+    def pending_channels(cls):
+        try:
+            cls.get_rpc_data()
+            request = ln.PendingChannelsRequest()
+            return cls.stub.PendingChannels(request, metadata=[('macaroon', cls.macaroon)])
+        except:
+            raise IOError('pending_channels')
+
+    @classmethod
     def connect(cls, addr, perm=False):
         try:
             cls.get_rpc_data()
@@ -243,6 +252,7 @@ class LndAL(object):
                                              target_conf=target_conf,
                                              sat_per_byte=sat_per_byte)
             for r in cls.stub.CloseChannel(request, metadata=[('macaroon', cls.macaroon)]):
+                # TODO: test the below
                 response.append(r)
                 if r:
                     break
@@ -255,5 +265,12 @@ class LndAL(object):
         val = {"fixed": fixed, "percent": percent}
         return val
 
+
 if __name__ == "__main__":
-    LndAL.connect({'pubkey': '0279c22ed7a068d10dc1a38ae66d2d6461e269226c60258c021b1ddcdfe4b00bc4', 'host': '51.15.123.173:9735'})
+    sc = SystemConfiguration()
+    sc.admin_macaroon_directory = '/home/coen/data'
+    sc.tls_cert_directory = '/home/coen/data'
+    sc.lnd_rpc_address = '192.168.0.110'
+    sc.lnd_rpc_port = '10009'
+    r = LndAL.pending_channels()
+    print(r)

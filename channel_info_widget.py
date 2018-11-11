@@ -21,6 +21,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
     def __init__(self, channel_id=0):
         super().__init__()
 
+        # self.resize(600, 600)
         self.channel_id = channel_id
         self.channel_name_label = QtWidgets.QLabel(self)
         self.channel_name_label.setGeometry(QtCore.QRect(200, 0, 700, 80))
@@ -292,7 +293,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.channel_name_label.setText(channel.remote_node_alias)
         self.active_label.setText(str(channel.channel_state))
         self.remote_pubkey_label.setText(channel.remote_pubkey)
-        self.channel_point_label.setText(channel.channel_point.get("funding_txid_str")+':'+str(channel.channel_point.get("output_index")))
+        self.channel_point_label.setText(lightning_channel.Channel.channel_point_str(channel.channel_point))
         self.channel_id_label.setText(str(channel.chan_id))
         self.capacity_label.setText(str(channel.capacity))
         self.local_balance_label.setText(str(channel.local_balance))

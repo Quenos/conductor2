@@ -13,12 +13,16 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+
+import ipaddress
+from config.config import SystemConfiguration
 from lightning import lndAL
 from collections import defaultdict
 from enum import Enum
-
+from abc import ABC, abstractmethod
 
 class HTLC(object):
+    # TODO: check with the htlc.py file
     def __init__(self, channel_htlc):
         self.incoming = channel_htlc.incoming
         self.amount = channel_htlc.amount
@@ -26,7 +30,7 @@ class HTLC(object):
         self.expiration_height = channel_htlc.expiration_height
 
 
-class Channel(object):
+class BaseChannel(ABC):
 
     class ChannelState(Enum):
         ACTIVE = 1
@@ -37,9 +41,11 @@ class Channel(object):
             return self.name
 
     def __init__(self, channel=None):
-        self.remote_pubkey = channel.remote_pubkey
+        if isinstance(self, PendingChannel):
+            self.remote_pubkey = channel.remote_node_pub
+        else:
+            self.remote_pubkey = channel.remote_pubkey
         self.channel_point = Channel.create_channel_point(channel.channel_point)
-        self.chan_id = channel.chan_id
         self.capacity = channel.capacity
         try:
             remote_node_info = lndAL.LndAL.get_node_info(self.remote_pubkey)
@@ -48,6 +54,11 @@ class Channel(object):
             self.remote_uri = "Unknown"
             for x in remote_node_info.node.addresses:
                 self.remote_uri = x.addr
+                # test if the uri is IPv4, IPv6 or tor
+                if self.remote_uri.split(':')[0][-5:] == 'onion':
+                    continue
+                if isinstance(ipaddress.ip_address(self.remote_uri.split(':')[0]), ipaddress.IPv4Address):
+                    break
         except Exception as ex:
             if ex.__str__()[:12] == "<_Rendezvous":
                 self.remote_node_alias = "Unknown"
@@ -56,15 +67,19 @@ class Channel(object):
                 raise ex
         self.channel_type = ""
 
-    def __eq__(self, other):
-        return self.chan_id == other.chan_id
-
     def update_channel(self, channel):
         self.remote_pubkey = channel.remote_pubkey
         self.channel_point = Channel.create_channel_point(channel.channel_point)
-        self.chan_id = channel.chan_id
         self.capacity = channel.capacity
         self.remote_node_alias = lndAL.LndAL.get_node_info(self.remote_pubkey).node.alias
+
+    @abstractmethod
+    def __eq__(self, other):
+        pass
+
+    @abstractmethod
+    def __ne__(self, other):
+        pass
 
     @staticmethod
     def create_channel_point(channel_point):
@@ -73,12 +88,32 @@ class Channel(object):
         return cp
 
     @staticmethod
+    def channel_point_str(channel_point):
+        return channel_point['funding_txid_str'] + ':' + str(channel_point['output_index'])
+
+    @staticmethod
     def factory(channel_type, channel):
         if channel_type == "open_channel":
             return OpenChannel(channel)
         if channel_type == "closed_channel":
             return ClosedChannel(channel)
-        assert 0, "Bad channel creation: " + channel_type
+        raise ValueError
+
+
+class Channel(BaseChannel):
+    def __init__(self, channel):
+        super(Channel, self).__init__(channel)
+        self.channel_type = "channel"
+        self.chan_id = channel.chan_id
+
+    def update_channel(self, channel):
+        self.chan_id = channel.chan_id
+
+    def __eq__(self, other):
+        return self.chan_id == other.chan_id
+
+    def __ne__(self, other):
+        return not self == other
 
 
 class OpenChannel(Channel):
@@ -135,6 +170,7 @@ class OpenChannel(Channel):
             x = r['close_pending']
             print(x)
 
+
 class ClosedChannel(Channel):
     def __init__(self, channel):
         super(ClosedChannel, self).__init__(channel)
@@ -156,6 +192,30 @@ class ClosedChannel(Channel):
         self.settled_balance = channel.settled_balance
         self.time_locked_balance = channel.time_locked_balance
         self.close_type = channel.close_type
+
+
+class PendingChannel(BaseChannel):
+    def __init__(self, channel):
+        super(PendingChannel, self).__init__(channel)
+        self.channel_type = 'pending_channel'
+        self.local_balance = channel.local_balance
+        self.remote_balance = channel.remote_balance
+
+    def update_channel(self, channel):
+        self.remote_pubkey = channel.remote_node_pub
+        self.channel_point = channel.channel_point
+        self.capacity = channel.capacity
+        self.channel_type = 'pending_channel'
+        self.local_balance = channel.local_balance
+        self.remote_balance = channel.remote_balance
+        self.remote_node_alias = lndAL.LndAL.get_node_info(self.remote_pubkey).node.alias
+
+    def __eq__(self, other):
+        return Channel.channel_point_str(self.channel_point) \
+               == Channel.channel_point_str(other.channel_point)
+
+    def __ne__(self, other):
+        return not self == other
 
 
 class Channels(object):
@@ -191,6 +251,7 @@ class Channels(object):
         for channel in response.channels:
             Channels.add_channel(channel, "closed_channel")
 
+
     @staticmethod
     def manage_channel_fees():
         for channel_index in Channels.channel_index:
@@ -223,8 +284,24 @@ class Channels(object):
     def find_by_chan_id(chan_id):
         return Channels.channel_index[chan_id]
 
+    @staticmethod
+    def find_by_chan_point(chan_point):
+        for c in Channels.channel_index:
+            channel = Channels.find_by_chan_id(c)
+            x = channel[0].channel_point
+            if channel[0].channel_point == chan_point:
+                return channel[0]
+        return None
+
 
 if __name__ == "__main__":
+    sc = SystemConfiguration()
+    sc.admin_macaroon_directory = '/home/coen/data'
+    sc.tls_cert_directory = '/home/coen/data'
+    sc.lnd_rpc_address = '192.168.0.110'
+    sc.lnd_rpc_port = '10009'
     channels = Channels()
     channels.read_channels()
-    channels.manage_channel_fees()
+    x = channels.find_by_chan_point('689cad04801d33e7a9a2fefacb1208cbf28ddb5daf9e2837b06009827da57930:1')
+    print(x)
+#    channels.manage_channel_fees()

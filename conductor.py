@@ -20,6 +20,7 @@ from channel_graph_widget import ChannelGraphWidget
 from channel_info_widget import ChannelInfoWidget
 from channel_list_widget import ChannelListWidget
 from settings_widget import SettingsDialog
+from pending_channels_widget import PendingChannelWidget
 from stylesheets.dark_theme import DarkTheme
 from config.config import SystemConfiguration
 from lightning import test_lnd_connection
@@ -77,7 +78,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.channelInfoWidget = ChannelInfoWidget()
 
         self.dockGraphWidget = QtWidgets.QDockWidget("Lightning Channel Graph", self)
-        self.dockGraphWidget.setMinimumSize(QtCore.QSize(1800, 600))
+        self.dockGraphWidget.setMinimumSize(QtCore.QSize(2075, 600))
         self.dockGraphWidget.setObjectName("dockGraphWidget")
         self.dockGraphWidget.setWidget(ChannelGraphWidget(self.channelInfoWidget))
         self.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.dockGraphWidget)
@@ -87,18 +88,27 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dockListWidget.setObjectName("dockListWidget")
         self.dockListWidget.setWidget(ChannelListWidget(self.channelInfoWidget))
         self.addDockWidget(QtCore.Qt.DockWidgetArea(2), self.dockListWidget)
+        # having the graph this list is superfluous. Hide it
+        self.dockListWidget.hide()
+
+        # instead the pending channels widget goes here
+        self.dockPendingChannelsWidget = QtWidgets.QDockWidget("Pending Channels", self)
+        self.dockPendingChannelsWidget.setMinimumSize(QtCore.QSize(1600, 600))
+        self.dockPendingChannelsWidget.setObjectName("dockPendingChannelsWidget")
+        self.dockPendingChannelsWidget.setWidget(PendingChannelWidget())
+        self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.RightDockWidgetArea), self.dockPendingChannelsWidget)
 
         self.dockInfoWidget = QtWidgets.QDockWidget("Lightning Channel Info", self)
-        self.dockInfoWidget.setMinimumSize(QtCore.QSize(1250, 600))
+        self.dockInfoWidget.setMinimumSize(QtCore.QSize(600, 800))
         self.dockInfoWidget.setObjectName("dockInfoWidget")
         self.dockInfoWidget.setWidget(self.channelInfoWidget)
-        self.addDockWidget(QtCore.Qt.DockWidgetArea(2), self.dockInfoWidget)
+        self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.RightDockWidgetArea), self.dockInfoWidget)
 
-        self.dockInfoWidget = QtWidgets.QDockWidget("Balance Info", self)
-        self.dockInfoWidget.setMinimumSize(QtCore.QSize(1250, 200))
-        self.dockInfoWidget.setObjectName("dockBalanceWidget")
-        self.dockInfoWidget.setWidget(BalanceInfoWidget())
-        self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.TopDockWidgetArea), self.dockInfoWidget)
+        self.dockBalanceWidget = QtWidgets.QDockWidget("Balance Info", self)
+        self.dockBalanceWidget.setMinimumSize(QtCore.QSize(1250, 200))
+        self.dockBalanceWidget.setObjectName("dockBalanceWidget")
+        self.dockBalanceWidget.setWidget(BalanceInfoWidget())
+        self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.TopDockWidgetArea), self.dockBalanceWidget)
 
         # because the containing view for ChannelInfoWidget did not exist on time of creation
         # of the object, the object can not show itself
@@ -120,6 +130,5 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     w = MainWindow()
     w.setStyleSheet(DarkTheme.get_style_sheet())
-    w.show()
+    w.showMaximized()
     sys.exit(app.exec_())
-    exit(0)

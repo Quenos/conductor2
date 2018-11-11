@@ -13,7 +13,7 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from lightning import wallet_balance, channel_balance
+from lightning import wallet_balance, channel_balance, pending_channels
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 
@@ -124,5 +124,27 @@ class BalanceInfoWidget(QtWidgets.QWidget):
         self.pending_open_balance_label.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.pending_open_balance_label.setObjectName("wallet_balance_conf_label")
         self.pending_open_balance_label.setText(str(cb.pending_open_balance) + " sat")
+
+        self.label_10 = QtWidgets.QLabel(self)
+        self.label_10.setGeometry(QtCore.QRect(1200, 0, 700, 80))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_10.setFont(font)
+        self.label_10.setObjectName("total_limbo_balance_label")
+        self.label_10.setText("Total limbo balance:")
+
+        lb = pending_channels.PendingChannels()
+        lb.read_pending_channels()
+        self.limbo_balance_label = QtWidgets.QLabel(self)
+        self.limbo_balance_label.setGeometry(QtCore.QRect(1550, 0, 700, 80))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        font.setWeight(75)
+        self.limbo_balance_label.setFont(font)
+        self.limbo_balance_label.setObjectName("channel_name_label")
+        self.limbo_balance_label.setText(str(lb.total_limbo_balance) + " sat")
 
         self.show()
