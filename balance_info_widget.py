@@ -13,7 +13,7 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from lightning import wallet_balance, channel_balance, pending_channels
+from lightning import wallet_balance, channel_balance, pending_channels, lightning_channel
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 
@@ -34,7 +34,7 @@ class BalanceInfoWidget(QtWidgets.QWidget):
 
         wb = wallet_balance.WalletBalance()
         self.wallet_balance_label = QtWidgets.QLabel(self)
-        self.wallet_balance_label.setGeometry(QtCore.QRect(350, 0, 700, 80))
+        self.wallet_balance_label.setGeometry(QtCore.QRect(325, 0, 700, 80))
         font = QtGui.QFont()
         font.setPointSize(12)
         font.setBold(True)
@@ -65,7 +65,7 @@ class BalanceInfoWidget(QtWidgets.QWidget):
         self.unconf_wallet_balance_label.setText(str(wb.unconfirmed_balance) + " sat")
 
         self.label_3 = QtWidgets.QLabel(self)
-        self.label_3.setGeometry(QtCore.QRect(350, 70, 300, 80))
+        self.label_3.setGeometry(QtCore.QRect(275, 70, 300, 80))
         font = QtGui.QFont()
         font.setPointSize(9)
         font.setBold(False)
@@ -75,7 +75,7 @@ class BalanceInfoWidget(QtWidgets.QWidget):
         self.label_3.setText("Conf:")
 
         self.conf_wallet_balance_label = QtWidgets.QLabel(self)
-        self.conf_wallet_balance_label.setGeometry(QtCore.QRect(415, 70, 700, 80))
+        self.conf_wallet_balance_label.setGeometry(QtCore.QRect(360, 70, 700, 80))
         font = QtGui.QFont()
         font.setPointSize(9)
         font.setBold(False)
@@ -84,6 +84,7 @@ class BalanceInfoWidget(QtWidgets.QWidget):
         self.conf_wallet_balance_label.setObjectName("wallet_balance_conf_label")
         self.conf_wallet_balance_label.setText(str(wb.confirmed_balance) + " sat")
 
+        # channel balance == local balance + pending balance (?)
         self.label_1 = QtWidgets.QLabel(self)
         self.label_1.setGeometry(QtCore.QRect(600, 0, 700, 80))
         font = QtGui.QFont()
@@ -126,7 +127,7 @@ class BalanceInfoWidget(QtWidgets.QWidget):
         self.pending_open_balance_label.setText(str(cb.pending_open_balance) + " sat")
 
         self.label_10 = QtWidgets.QLabel(self)
-        self.label_10.setGeometry(QtCore.QRect(1200, 0, 700, 80))
+        self.label_10.setGeometry(QtCore.QRect(1200, 70, 700, 80))
         font = QtGui.QFont()
         font.setPointSize(12)
         font.setBold(True)
@@ -138,13 +139,83 @@ class BalanceInfoWidget(QtWidgets.QWidget):
         lb = pending_channels.PendingChannels()
         lb.read_pending_channels()
         self.limbo_balance_label = QtWidgets.QLabel(self)
-        self.limbo_balance_label.setGeometry(QtCore.QRect(1550, 0, 700, 80))
+        self.limbo_balance_label.setGeometry(QtCore.QRect(1550, 70, 700, 80))
         font = QtGui.QFont()
         font.setPointSize(12)
         font.setBold(True)
         font.setWeight(75)
         self.limbo_balance_label.setFont(font)
-        self.limbo_balance_label.setObjectName("channel_name_label")
+        self.limbo_balance_label.setObjectName("total_limbo_balance_label")
         self.limbo_balance_label.setText(str(lb.total_limbo_balance) + " sat")
+
+        self.label_11 = QtWidgets.QLabel(self)
+        self.label_11.setGeometry(QtCore.QRect(1200, 0, 700, 80))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_11.setFont(font)
+        self.label_11.setObjectName("label_11")
+        self.label_11.setText("Total local balance:")
+
+        self.tot_local_balance_label = QtWidgets.QLabel(self)
+        self.tot_local_balance_label.setGeometry(QtCore.QRect(1550, 0, 700, 80))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        font.setWeight(75)
+        self.tot_local_balance_label.setFont(font)
+        self.tot_local_balance_label.setObjectName("total_local_balance_label")
+        self.tot_local_balance_label.setText(str(lightning_channel.Channels.tot_local_balance()) + " sat")
+
+        self.label_12 = QtWidgets.QLabel(self)
+        self.label_12.setGeometry(QtCore.QRect(1800, 0, 700, 80))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_12.setFont(font)
+        self.label_12.setObjectName("total_remote_balance_label")
+        self.label_12.setText("Total remote balance:")
+
+        self.tot_remote_balance_label = QtWidgets.QLabel(self)
+        self.tot_remote_balance_label.setGeometry(QtCore.QRect(2155, 0, 700, 80))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        font.setWeight(75)
+        self.tot_remote_balance_label.setFont(font)
+        self.tot_remote_balance_label.setObjectName("channel_name_label")
+        self.tot_remote_balance_label.setText(str(lightning_channel.Channels.tot_remote_balance()) + " sat")
+
+        self.label_13 = QtWidgets.QLabel(self)
+        self.label_13.setGeometry(QtCore.QRect(1800, 70, 700, 80))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_13.setFont(font)
+        self.label_13.setObjectName("label_13")
+        self.label_13.setText("Ratio local/remote:")
+
+        ratio = lightning_channel.Channels.tot_local_balance() / lightning_channel.Channels.tot_remote_balance()
+        ratio = round(ratio * 100) / 100
+        self.ratio_label = QtWidgets.QLabel(self)
+        self.ratio_label.setAlignment(QtCore.Qt.AlignCenter)
+        if ratio < 0.5 or ratio > 1.5:
+            self.ratio_label.setStyleSheet("QLabel { background-color : #aa3333; }")
+        elif ratio < 0.75 or ratio > 1.25:
+            self.ratio_label.setStyleSheet("QLabel { background-color : #aa8000; }")
+        else:
+            self.ratio_label.setStyleSheet("QLabel { background-color : #33aa33; }")
+
+        self.ratio_label.setGeometry(QtCore.QRect(2155, 70, 100, 80))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        font.setWeight(75)
+        self.ratio_label.setFont(font)
+        self.ratio_label.setObjectName("channel_name_label")
+        self.ratio_label.setText(str(ratio))
 
         self.show()

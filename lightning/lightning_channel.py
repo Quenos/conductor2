@@ -21,14 +21,6 @@ from collections import defaultdict
 from enum import Enum
 from abc import ABC, abstractmethod
 
-class HTLC(object):
-    # TODO: check with the htlc.py file
-    def __init__(self, channel_htlc):
-        self.incoming = channel_htlc.incoming
-        self.amount = channel_htlc.amount
-        self.hash_lock = channel_htlc.hash_lock
-        self.expiration_height = channel_htlc.expiration_height
-
 
 class BaseChannel(ABC):
 
@@ -251,6 +243,23 @@ class Channels(object):
         for channel in response.channels:
             Channels.add_channel(channel, "closed_channel")
 
+    @staticmethod
+    def tot_local_balance():
+        ret_val = 0
+        for c in Channels.channel_index:
+            channel = Channels.find_by_chan_id(c)
+            if isinstance(channel[0], OpenChannel):
+                ret_val += channel[0].local_balance
+        return ret_val
+
+    @staticmethod
+    def tot_remote_balance():
+        ret_val = 0
+        for c in Channels.channel_index:
+            channel = Channels.find_by_chan_id(c)
+            if isinstance(channel[0], OpenChannel):
+                ret_val += channel[0].remote_balance
+        return ret_val
 
     @staticmethod
     def manage_channel_fees():
@@ -288,7 +297,6 @@ class Channels(object):
     def find_by_chan_point(chan_point):
         for c in Channels.channel_index:
             channel = Channels.find_by_chan_id(c)
-            x = channel[0].channel_point
             if channel[0].channel_point == chan_point:
                 return channel[0]
         return None

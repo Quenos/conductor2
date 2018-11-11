@@ -27,8 +27,12 @@ from lightning import test_lnd_connection
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-# TODO 3: Add channel policy update window
-# TODO 4: Add auto refresh every hour
+
+# TODO 1: Show total local balance and remote balance in balance info window
+# TODO 2: Add open a channel using node alias - show pub key and user acknowledge before opening
+# TODO 3: Add channel policy update window - global, node, based on ration local and remote balance
+# TODO 4: Add overview of inactive channels - toggle between node colours and green (active) red (inactive) nodes
+# TODO 5: Add auto refresh every hour
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -124,6 +128,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.system_config.lnd_rpc_address = self.settings_dialog.ip_lnd.text()
         self.system_config.lnd_rpc_port = self.settings_dialog.port_lnd.text()
         self.system_config.write_config()
+
 
 if __name__ == "__main__":
 
