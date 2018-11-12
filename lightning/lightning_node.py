@@ -13,7 +13,66 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+import ipaddress
 from lightning import lndAL
+from config.config import SystemConfiguration
+
+
+class Node(object):
+    def __init__(self,
+                 num_channels=0,
+                 total_capacity=0,
+                 last_update=0,
+                 pub_key='',
+                 alias='',
+                 addresses='',
+                 color=''):
+        self.num_channels = num_channels
+        self.total_capacity = total_capacity
+        self.last_update = last_update
+        self.pub_key = pub_key
+        self.alias = alias
+        if addresses:
+            try:
+                self.address = "Unknown"
+                for x in addresses:
+                    self.address = x.addr
+                    # test if the uri is IPv4, IPv6 or tor
+                    if self.address.split(':')[0][-5:] == 'onion':
+                        continue
+                    if isinstance(ipaddress.ip_address(self.address.split(':')[0]), ipaddress.IPv4Address):
+                        break
+            except Exception as ex:
+                raise ex
+
+        self.color = color
+
+    @staticmethod
+    def find_node(pub_key=None, alias=None):
+        ret_val = None
+        if pub_key:
+            try:
+                response = lndAL.LndAL.get_node_info(pub_key)
+                if response.node:
+                    ret_val = Node(response.num_channels,
+                                   response.total_capacity,
+                                   response.node.last_update,
+                                   response.node.pub_key,
+                                   response.node.alias,
+                                   response.node.addresses,
+                                   response.node.color)
+            except Exception as ex:
+                if ex.__str__()[:12] != "<_Rendezvous":
+                    raise ex
+        elif alias:
+            response = lndAL.LndAL.describe_graph()
+            for node in response.nodes:
+                if node.alias == alias:
+                    # the recursion is used because describe graph doesn't return the number of channels
+                    # and the total capacity. So once the pub_key is known, the function is now called
+                    # with the pub key as search parameter
+                    ret_val = Node.find_node(node.pub_key)
+        return ret_val
 
 
 class HomeNode(object):
@@ -21,3 +80,14 @@ class HomeNode(object):
     def __init__(self):
         info = lndAL.LndAL.get_info()
         self.name = info.alias
+
+
+if __name__ == "__main__":
+    sc = SystemConfiguration()
+    sc.admin_macaroon_directory = '/home/coen/data'
+    sc.tls_cert_directory = '/home/coen/data'
+    sc.lnd_rpc_address = '192.168.0.110'
+    sc.lnd_rpc_port = '10009'
+    node = Node.find_node(pub_key='026d9b9c8e55b435f117496e6a885fba7bf76530a5aa6f8f61304f84f9a31dda0')
+    #    node = Node.find_node(alias='Quenos [LND]')
+    print(node)

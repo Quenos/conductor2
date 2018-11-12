@@ -239,8 +239,42 @@ class LndAL(object):
             cls.get_rpc_data()
             request = ln.ConnectPeerRequest(addr=addr)
             return cls.stub.ConnectPeer(request, metadata=[('macaroon', cls.macaroon)])
-        except:
-            raise IOError('connect')
+        except Exception as ex:
+            raise ex
+
+    @classmethod
+    def open_channel(cls,
+                     node_pub_key,
+                     node_pub_key_string,
+                     local_funding_amount,
+                     push_sat=0,
+                     target_conf=0,
+                     sat_per_byte=0,
+                     private=False,
+                     min_htlc_msat=0,
+                     remote_csv_delay=0,
+                     min_confs=1,
+                     spend_unconfirmed=False):
+        try:
+            response = []
+            cls.get_rpc_data()
+            request = ln.OpenChannelRequest(node_pubkey=node_pub_key,
+                                            local_funding_amount=local_funding_amount,
+                                            push_sat=push_sat,
+                                            target_conf=target_conf,
+                                            sat_per_byte=sat_per_byte,
+                                            private=private,
+                                            min_htlc_msat=min_htlc_msat,
+                                            remote_csv_delay=remote_csv_delay)
+
+            for r in cls.stub.OpenChannel(request, metadata=[('macaroon', cls.macaroon)]):
+                # TODO: test the below
+                response.append(r)
+                if r:
+                    break
+            return response
+        except Exception as ex:
+            raise ex
 
     @classmethod
     def close_channel(cls, channel_point, force=False, target_conf=0, sat_per_byte=0):
@@ -257,8 +291,10 @@ class LndAL(object):
                 if r:
                     break
             return response
-        except:
+        except IOError:
             raise IOError('close channel')
+        except Exception as ex:
+            raise ex
 
     @staticmethod
     def set_fee_limit(fixed=0, percent=0):

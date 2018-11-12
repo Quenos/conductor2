@@ -17,6 +17,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from stylesheets.dark_theme import DarkTheme
 from config.config import SystemConfiguration
 
+
 class SettingsDialog(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()

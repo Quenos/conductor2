@@ -21,6 +21,7 @@ from channel_info_widget import ChannelInfoWidget
 from channel_list_widget import ChannelListWidget
 from settings_widget import SettingsDialog
 from pending_channels_widget import PendingChannelWidget
+from node_info_widget import NodeInfoWidget
 from stylesheets.dark_theme import DarkTheme
 from config.config import SystemConfiguration
 from lightning import test_lnd_connection
@@ -28,8 +29,8 @@ from lightning import test_lnd_connection
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 
-# TODO 1: Show total local balance and remote balance in balance info window
-# TODO 2: Add open a channel using node alias - show pub key and user acknowledge before opening
+# TODO 1: add splash screen
+# TODO 2: Add some basic exception handling
 # TODO 3: Add channel policy update window - global, node, based on ration local and remote balance
 # TODO 4: Add overview of inactive channels - toggle between node colours and green (active) red (inactive) nodes
 # TODO 5: Add auto refresh every hour
@@ -55,6 +56,8 @@ class MainWindow(QtWidgets.QMainWindow):
             exit(-1)
 
         self.settings_dialog = None
+        self.node_info_dialog = None
+
         self.resize(3000, 1700)
         centralwidget = QtWidgets.QWidget(self)
         centralwidget.setObjectName("centralwidget")
@@ -70,19 +73,27 @@ class MainWindow(QtWidgets.QMainWindow):
         settings_action.setStatusTip('Modify settings')
         settings_action.triggered.connect(self.settings)
 
+        open_channel_action = QtWidgets.QAction(QtGui.QIcon('open_channel.png'), '&Open Channel', self)
+        open_channel_action.setShortcut('Ctrl+Shift+O')
+        open_channel_action.setStatusTip('Open channel')
+        open_channel_action.triggered.connect(self.open_channel)
+
         self.statusBar()
 
         menubar = self.menuBar()
-        fileMenu = menubar.addMenu('&File')
-        fileMenu.addAction(exit_action)
-        fileMenu.addAction(settings_action)
+        file_menu = menubar.addMenu('&File')
+        file_menu.addAction(exit_action)
+        file_menu.addAction(settings_action)
+
+        action_menu = menubar.addMenu('&Action')
+        action_menu.addAction(open_channel_action)
 
         # Channel List and Channel Graph need access to the ChannelInfoWidget to display info
         # create the channel info widget to be used by the channel list and graph
         self.channelInfoWidget = ChannelInfoWidget()
 
         self.dockGraphWidget = QtWidgets.QDockWidget("Lightning Channel Graph", self)
-        self.dockGraphWidget.setMinimumSize(QtCore.QSize(2075, 600))
+        self.dockGraphWidget.setMinimumSize(QtCore.QSize(2075, 700))
         self.dockGraphWidget.setObjectName("dockGraphWidget")
         self.dockGraphWidget.setWidget(ChannelGraphWidget(self.channelInfoWidget))
         self.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.dockGraphWidget)
@@ -97,16 +108,22 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # instead the pending channels widget goes here
         self.dockPendingChannelsWidget = QtWidgets.QDockWidget("Pending Channels", self)
-        self.dockPendingChannelsWidget.setMinimumSize(QtCore.QSize(1600, 600))
+        self.dockPendingChannelsWidget.setMinimumSize(QtCore.QSize(1600, 700))
         self.dockPendingChannelsWidget.setObjectName("dockPendingChannelsWidget")
         self.dockPendingChannelsWidget.setWidget(PendingChannelWidget())
         self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.RightDockWidgetArea), self.dockPendingChannelsWidget)
 
         self.dockInfoWidget = QtWidgets.QDockWidget("Lightning Channel Info", self)
-        self.dockInfoWidget.setMinimumSize(QtCore.QSize(600, 800))
+        self.dockInfoWidget.setMinimumSize(QtCore.QSize(600, 650))
         self.dockInfoWidget.setObjectName("dockInfoWidget")
         self.dockInfoWidget.setWidget(self.channelInfoWidget)
         self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.RightDockWidgetArea), self.dockInfoWidget)
+
+        self.dockNodeInfoWidget = QtWidgets.QDockWidget("Node Info", self)
+        self.dockNodeInfoWidget.setMinimumSize(QtCore.QSize(600, 650))
+        self.dockNodeInfoWidget.setObjectName("dockInfoWidget")
+        self.dockNodeInfoWidget.setWidget(NodeInfoWidget())
+        self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.LeftDockWidgetArea), self.dockNodeInfoWidget)
 
         self.dockBalanceWidget = QtWidgets.QDockWidget("Balance Info", self)
         self.dockBalanceWidget.setMinimumSize(QtCore.QSize(1250, 200))
@@ -128,6 +145,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.system_config.lnd_rpc_address = self.settings_dialog.ip_lnd.text()
         self.system_config.lnd_rpc_port = self.settings_dialog.port_lnd.text()
         self.system_config.write_config()
+
+    def open_channel(self):
+        self.dockNodeInfoWidget.show()
 
 
 if __name__ == "__main__":

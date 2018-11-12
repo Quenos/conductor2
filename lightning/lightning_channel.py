@@ -22,6 +22,9 @@ from enum import Enum
 from abc import ABC, abstractmethod
 
 
+# TODO: investigate if the Node class from lightning_node.py can be used
+
+
 class BaseChannel(ABC):
 
     class ChannelState(Enum):
@@ -153,14 +156,14 @@ class OpenChannel(Channel):
         self.private = channel.private
 
     def reconnect(self):
-        lndAL.LndAL.connect({'pubkey': self.remote_pubkey, 'host': self.remote_uri}, True)
+        try:
+            lndAL.LndAL.connect({'pubkey': self.remote_pubkey, 'host': self.remote_uri}, True)
+        except:
+            pass
 
     def close_channel(self):
         force = self.channel_state == Channel.ChannelState.INACTIVE
-        response = lndAL.LndAL.close_channel(self.channel_point, force=force)
-        for r in response:
-            x = r['close_pending']
-            print(x)
+        lndAL.LndAL.close_channel(self.channel_point, force=force)
 
 
 class ClosedChannel(Channel):
@@ -260,6 +263,23 @@ class Channels(object):
             if isinstance(channel[0], OpenChannel):
                 ret_val += channel[0].remote_balance
         return ret_val
+
+    @staticmethod
+    def open_channel(pub_key_str, amount, sat_per_byte=0, address=None):
+        try:
+            if address:
+                lndAL.LndAL.connect({'pubkey': pub_key_str, 'host': address}, True)
+        except:
+            pass
+        try:
+            pub_key = bytes.fromhex(pub_key_str)
+            response = lndAL.LndAL.open_channel(node_pub_key=pub_key,
+                                                node_pub_key_string=pub_key_str,
+                                                local_funding_amount=amount,
+                                                sat_per_byte=sat_per_byte)
+            return response
+        except Exception as ex:
+            raise ex
 
     @staticmethod
     def manage_channel_fees():

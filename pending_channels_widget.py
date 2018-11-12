@@ -22,7 +22,8 @@ class PendingChannelWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
 
-        self.setObjectName("PendingChannls")
+        self.pending_channels = None
+        self.setObjectName("PendingChannels")
 
         self.channel_name_label = QtWidgets.QLabel(self)
         self.channel_name_label.setGeometry(QtCore.QRect(200, 0, 700, 80))
@@ -666,24 +667,59 @@ class PendingChannelWidget(QtWidgets.QWidget):
         self.prev_button.clicked.connect(self._prev_channel)
         self.next_button.clicked.connect(self._next_channel)
 
-        self.pending_channels = PendingChannels()
-        self.pending_channels.read_pending_channels()
         self.update()
 
     def _tab_changed(self, index):
-        print(index)
         self._tab_active = index
+        self.update()
         # if self.tabWidget.
 
     def _next_channel(self):
-        print('Next clicked')
-        pass
+        if self._poc == self._tab_active:
+            if self._poc_index < len(self.pending_channels.pending_open_channels) - 1:
+                self._poc_index += 1
+        if self._cc == self._tab_active:
+            if self._cc_index < len(self.pending_channels.pending_closing_channels) - 1:
+                self._cc_index += 1
+        if self._fcc == self._tab_active:
+            if self._fcc_index < len(self.pending_channels.pending_force_closing_channels) - 1:
+                self._fcc_index += 1
+        if self._wcc == self._tab_active:
+            if self._wcc_index < len(self.pending_channels.waiting_close_channels) - 1:
+                self._wcc += 1
+        self.update()
 
     def _prev_channel(self):
-        print('Prev Clicked')
-        pass
+        if self._poc == self._tab_active:
+            if self._poc_index > 0:
+                self._poc_index -= 1
+        if self._cc == self._tab_active:
+            if self._cc_index > 0:
+                self._cc_index -= 1
+        if self._fcc == self._tab_active:
+            if self._fcc_index > 0:
+                self._fcc_index -= 1
+        if self._wcc == self._tab_active:
+            if self._wcc_index > 0:
+                self._wcc_index -= 1
+        self.update()
 
     def update(self):
+
+        # self._wcc -> current tab index of waiting close channel tab
+        # self._fcc -> current tab index of forced close channel tab
+        # self._cc -> current tab index of pending close channel tab
+        # self._poc -> current tab index of pending open channel tab
+        # if any of these are -1 -> tab not shown
+
+        # self._wcc_index -> current index of waiting close channel displayed (if tab active)
+        # self._fcc_index -> current index of of forced close channel displayed (if tab active)
+        # self._cc_index -> current index of pending close channel displayed (if tab active)
+        # self._poc_index -> current index of of pending open channel displayed (if tab active)
+
+        self.pending_channels = PendingChannels()
+        self.pending_channels.read_pending_channels()
+
         ###############################################################################
         #
         # waiting close channels
@@ -700,31 +736,24 @@ class PendingChannelWidget(QtWidgets.QWidget):
                 self.tabWidget.addTab(self.tab_6, "Waiting Close Channels")
                 self._wcc = self._next_tab_index
                 self._next_tab_index += 1
-            self.wcc_cp_label.setText(self.pending_channels.waiting_close_channels[self._wcc_index].channel_point)
+            self.wcc_cp_label.setText(Channel.channel_point_str(
+                self.pending_channels.waiting_close_channels[self._wcc_index].channel_point))
             self.wcc_cap_label.setText(str(self.pending_channels.waiting_close_channels[self._wcc_index].capacity))
             self.wcc_local_bal_label.setText(
                 str(self.pending_channels.waiting_close_channels[self._wcc_index].local_balance))
             self.wcc_rb_label.setText(str(self.pending_channels.waiting_close_channels[self._wcc_index].remote_balance))
-            self.wcc_lb_label.setText(self.pending_channels.waiting_close_channels[self._wcc_index].limbo_balance)
-            self.fcc_limbo_bal_label.setText(str(
-                self.pending_channels.waiting_close_channels[self._wcc_index].limbo_balance))
-            self.fcc_mh_label.setText(
-                str(self.pending_channels.waiting_close_channels[self._wcc_index].maturity_height))
-            self.fcc_btm_label.setText(
-                str(self.pending_channels.waiting_close_channels[self._wcc_index].blocks_til_maturity))
-            self.fcc_rb_label.setText(
-                str(self.pending_channels.waiting_close_channels[self._wcc_index].recovered_balance))
+            self.wcc_lb_label.setText(str(self.pending_channels.waiting_close_channels[self._wcc_index].limbo_balance))
 
             if self._tab_active == self._wcc:
-                if self._wcc_index >= len(self.pending_channels.waiting_close_channels) - 1:
+                if self._wcc_index < len(self.pending_channels.waiting_close_channels) - 1 > 0:
+                    self.next_button.show()
+                else:
                     self.next_button.hide()
-                else:
-                    if self._wcc_index > 0:
-                        self.next_button.show()
-                if self._wcc_index == 0:
-                    self.prev_button.hide()
-                else:
+
+                if self._wcc_index > 0:
                     self.prev_button.show()
+                else:
+                    self.prev_button.hide()
 
         ###############################################################################
         #
@@ -768,15 +797,15 @@ class PendingChannelWidget(QtWidgets.QWidget):
                 str(self.pending_channels.pending_force_closing_channels[self._fcc_index].recovered_balance))
 
             if self._tab_active == self._fcc:
-                if self._fcc_index >= len(self.pending_channels.pending_force_closing_channels) - 1:
+                if self._fcc_index < len(self.pending_channels.pending_force_closing_channels) - 1 > 0:
+                    self.next_button.show()
+                else:
                     self.next_button.hide()
-                else:
-                    if self._fcc_index > 0:
-                        self.next_button.show()
-                if self._fcc_index == 0:
-                    self.prev_button.hide()
-                else:
+
+                if self._fcc_index > 0:
                     self.prev_button.show()
+                else:
+                    self.prev_button.hide()
 
         ###############################################################################
         #
@@ -795,22 +824,23 @@ class PendingChannelWidget(QtWidgets.QWidget):
                 self.tabWidget.addTab(self.tab_2, "Closing Channels")
                 self._cc = self._next_tab_index
                 self._next_tab_index += 1
-            self.cc_cp_label.setText(self.pending_channels.pending_closing_channels[self._cc_index].channel_point)
+            self.cc_cp_label.setText(Channel.channel_point_str(
+                self.pending_channels.pending_closing_channels[self._cc_index].channel_point))
             self.cc_cap_label.setText(str(self.pending_channels.pending_closing_channels[self._cc_index].capacity))
             self.cc_lb_label.setText(str(self.pending_channels.pending_closing_channels[self._cc_index].local_balance))
             self.cc_rb_label.setText(str(self.pending_channels.pending_closing_channels[self._cc_index].remote_balance))
             self.cc_ctid_label.setText(self.pending_channels.pending_closing_channels[self._cc_index].closing_txid)
 
         if self._tab_active == self._cc:
-            if self._cc_index >= len(self.pending_channels.pending_closing_channels) - 1:
+            if self._cc_index < len(self.pending_channels.pending_closing_channels) - 1 > 0:
+                self.next_button.show()
+            else:
                 self.next_button.hide()
-            else:
-                if self._cc_index > 0:
-                    self.next_button.show()
-            if self._cc_index == 0:
-                self.prev_button.hide()
-            else:
+
+            if self._cc_index > 0:
                 self.prev_button.show()
+            else:
+                self.prev_button.hide()
 
         ###############################################################################
         #
@@ -829,7 +859,8 @@ class PendingChannelWidget(QtWidgets.QWidget):
                 self.tabWidget.addTab(self.tab, "Pending Open Channels")
                 self._poc = self._next_tab_index
                 self._next_tab_index += 1
-            self.poc_cp_label.setText(self.pending_channels.pending_open_channels[self._poc_index].channel_point)
+            self.poc_cp_label.setText(
+                Channel.channel_point_str(self.pending_channels.pending_open_channels[self._poc_index].channel_point))
             self.poc_cap_label.setText(str(self.pending_channels.pending_open_channels[self._poc_index].capacity))
             self.poc_lb_label.setText(str(self.pending_channels.pending_open_channels[self._poc_index].local_balance))
             self.poc_rb_label.setText(str(self.pending_channels.pending_open_channels[self._poc_index].remote_balance))
@@ -840,12 +871,12 @@ class PendingChannelWidget(QtWidgets.QWidget):
             self.poc_fpkw_label.setText(str(self.pending_channels.pending_open_channels[self._poc_index].fee_per_kw))
 
             if self._tab_active == self._poc:
-                if self._poc_index >= len(self.pending_channels.pending_open_channels) - 1:
+                if self._poc_index < len(self.pending_channels.pending_open_channels) - 1 > 0:
+                    self.next_button.show()
+                else:
                     self.next_button.hide()
-                else:
-                    if self._poc_index > 0:
-                        self.next_button.show()
-                if self._poc_index == 0:
-                    self.prev_button.hide()
-                else:
+
+                if self._poc_index > 0:
                     self.prev_button.show()
+                else:
+                    self.prev_button.hide()
