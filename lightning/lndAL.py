@@ -259,6 +259,7 @@ class LndAL(object):
             response = []
             cls.get_rpc_data()
             request = ln.OpenChannelRequest(node_pubkey=node_pub_key,
+                                            node_pubkey_string=node_pub_key_string,
                                             local_funding_amount=local_funding_amount,
                                             push_sat=push_sat,
                                             target_conf=target_conf,

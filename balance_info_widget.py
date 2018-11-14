@@ -218,4 +218,34 @@ class BalanceInfoWidget(QtWidgets.QWidget):
         self.ratio_label.setObjectName("channel_name_label")
         self.ratio_label.setText(str(ratio))
 
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.update)
+        self.timer.start(30000)
+
         self.show()
+
+    def update(self):
+        wb = wallet_balance.WalletBalance()
+        self.wallet_balance_label.setText(str(wb.total_balance) + " sat")
+        self.unconf_wallet_balance_label.setText(str(wb.unconfirmed_balance) + " sat")
+        self.conf_wallet_balance_label.setText(str(wb.confirmed_balance) + " sat")
+
+        cb = channel_balance.ChannelBalance()
+        self.channel_balance_label.setText(str(cb.balance) + " sat")
+        self.pending_open_balance_label.setText(str(cb.pending_open_balance) + " sat")
+
+        lb = pending_channels.PendingChannels()
+        lb.read_pending_channels()
+        self.limbo_balance_label.setText(str(lb.total_limbo_balance) + " sat")
+
+        self.tot_local_balance_label.setText(str(lightning_channel.Channels.tot_local_balance()) + " sat")
+        self.tot_remote_balance_label.setText(str(lightning_channel.Channels.tot_remote_balance()) + " sat")
+
+        ratio = lightning_channel.Channels.tot_local_balance() / lightning_channel.Channels.tot_remote_balance()
+        ratio = round(ratio * 100) / 100
+        if ratio < 0.5 or ratio > 1.5:
+            self.ratio_label.setStyleSheet("QLabel { background-color : #aa3333; }")
+        elif ratio < 0.75 or ratio > 1.25:
+            self.ratio_label.setStyleSheet("QLabel { background-color : #aa8000; }")
+        else:
+            self.ratio_label.setStyleSheet("QLabel { background-color : #33aa33; }")

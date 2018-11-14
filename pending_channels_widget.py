@@ -23,6 +23,7 @@ class PendingChannelWidget(QtWidgets.QWidget):
         super().__init__()
 
         self.pending_channels = None
+        self.cp = 0
         self.setObjectName("PendingChannels")
 
         self.channel_name_label = QtWidgets.QLabel(self)
@@ -135,8 +136,9 @@ class PendingChannelWidget(QtWidgets.QWidget):
         font = QtGui.QFont()
         font.setPointSize(11)
         self.poc_cp_label.setFont(font)
-        self.poc_cp_label.setTextInteractionFlags(
-            QtCore.Qt.LinksAccessibleByMouse | QtCore.Qt.TextSelectableByKeyboard | QtCore.Qt.TextSelectableByMouse)
+        # self.poc_cp_label.setTextInteractionFlags(
+        #    QtCore.Qt.LinksAccessibleByMouse | QtCore.Qt.TextSelectableByKeyboard | QtCore.Qt.TextSelectableByMouse)
+        self.poc_cp_label.linkActivated.connect(self.open_block_explorer)
         self.poc_cp_label.setObjectName("poc_cp_label")
 
         self.formLayout_11.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.poc_cp_label)
@@ -239,8 +241,9 @@ class PendingChannelWidget(QtWidgets.QWidget):
         font = QtGui.QFont()
         font.setPointSize(11)
         self.cc_cp_label.setFont(font)
-        self.cc_cp_label.setTextInteractionFlags(
-            QtCore.Qt.LinksAccessibleByMouse | QtCore.Qt.TextSelectableByKeyboard | QtCore.Qt.TextSelectableByMouse)
+        # self.cc_cp_label.setTextInteractionFlags(
+        #    QtCore.Qt.LinksAccessibleByMouse | QtCore.Qt.TextSelectableByKeyboard | QtCore.Qt.TextSelectableByMouse)
+        self.cc_cp_label.linkActivated.connect(self.open_block_explorer)
         self.cc_cp_label.setObjectName("cc_cp_label")
 
         self.formLayout_6.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.cc_cp_label)
@@ -425,8 +428,9 @@ class PendingChannelWidget(QtWidgets.QWidget):
         font = QtGui.QFont()
         font.setPointSize(11)
         self.fcc_cp_label.setFont(font)
-        self.fcc_cp_label.setTextInteractionFlags(
-            QtCore.Qt.LinksAccessibleByMouse | QtCore.Qt.TextSelectableByKeyboard | QtCore.Qt.TextSelectableByMouse)
+        # self.fcc_cp_label.setTextInteractionFlags(
+        #    QtCore.Qt.LinksAccessibleByMouse | QtCore.Qt.TextSelectableByKeyboard | QtCore.Qt.TextSelectableByMouse)
+        self.fcc_cp_label.linkActivated.connect(self.open_block_explorer)
         self.fcc_cp_label.setObjectName("fcc_cp_label")
 
         self.formLayout_7.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.fcc_cp_label)
@@ -511,8 +515,9 @@ class PendingChannelWidget(QtWidgets.QWidget):
         font = QtGui.QFont()
         font.setPointSize(11)
         self.wcc_cp_label.setFont(font)
-        self.wcc_cp_label.setTextInteractionFlags(
-            QtCore.Qt.LinksAccessibleByMouse | QtCore.Qt.TextSelectableByKeyboard | QtCore.Qt.TextSelectableByMouse)
+        # self.wcc_cp_label.setTextInteractionFlags(
+        #    QtCore.Qt.LinksAccessibleByMouse | QtCore.Qt.TextSelectableByKeyboard | QtCore.Qt.TextSelectableByMouse)
+        self.wcc_cp_label.linkActivated.connect(self.open_block_explorer)
         self.wcc_cp_label.setObjectName("wcc_cp_label")
 
         self.formLayout_8.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.wcc_cp_label)
@@ -667,6 +672,10 @@ class PendingChannelWidget(QtWidgets.QWidget):
         self.prev_button.clicked.connect(self._prev_channel)
         self.next_button.clicked.connect(self._next_channel)
 
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.update)
+        self.timer.start(30000)
+
         self.update()
 
     def _tab_changed(self, index):
@@ -717,6 +726,8 @@ class PendingChannelWidget(QtWidgets.QWidget):
         # self._cc_index -> current index of pending close channel displayed (if tab active)
         # self._poc_index -> current index of of pending open channel displayed (if tab active)
 
+        self.tabWidget.currentChanged.disconnect(self._tab_changed)
+
         self.pending_channels = PendingChannels()
         self.pending_channels.read_pending_channels()
 
@@ -726,18 +737,23 @@ class PendingChannelWidget(QtWidgets.QWidget):
         #
         ###############################################################################
         if not self.pending_channels.waiting_close_channels:
-            self.tabWidget.removeTab(self._wcc)
-            self._wcc = -1
-            self._next_tab_index -= 1
-            self.prev_button.hide()
-            self.next_button.hide()
+            if self._wcc > -1:
+                self.tabWidget.removeTab(self._wcc)
+                self._wcc = -1
+                self._next_tab_index -= 1
+                self.prev_button.hide()
+                self.next_button.hide()
         else:
             if self._wcc == -1:  # the tab does not exist, so create it
                 self.tabWidget.addTab(self.tab_6, "Waiting Close Channels")
                 self._wcc = self._next_tab_index
                 self._next_tab_index += 1
-            self.wcc_cp_label.setText(Channel.channel_point_str(
-                self.pending_channels.waiting_close_channels[self._wcc_index].channel_point))
+
+            self.cp = Channel.channel_point_str(
+                self.pending_channels.waiting_close_channels[self._wcc_index].channel_point)
+            self.wcc_cp_label.setText(
+                '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/">' + self.cp + '</a>')
+
             self.wcc_cap_label.setText(str(self.pending_channels.waiting_close_channels[self._wcc_index].capacity))
             self.wcc_local_bal_label.setText(
                 str(self.pending_channels.waiting_close_channels[self._wcc_index].local_balance))
@@ -762,11 +778,12 @@ class PendingChannelWidget(QtWidgets.QWidget):
         ###############################################################################
 
         if not self.pending_channels.pending_force_closing_channels:
-            self.tabWidget.removeTab(self._fcc)
-            self._fcc = -1
-            self._next_tab_index -= 1
-            self.prev_button.hide()
-            self.next_button.hide()
+            if self._fcc > -1:
+                self.tabWidget.removeTab(self._fcc)
+                self._fcc = -1
+                self._next_tab_index -= 1
+                self.prev_button.hide()
+                self.next_button.hide()
         else:
             if self._fcc == -1:  # the tab does not exist, so create it
                 self.tabWidget.addTab(self.tab_5, "Forced Closing Channels")
@@ -776,9 +793,11 @@ class PendingChannelWidget(QtWidgets.QWidget):
             self.channel_name_label.setText(
                 self.pending_channels.pending_force_closing_channels[self._fcc_index].remote_node_alias)
 
+            self.cp = Channel.channel_point_str(
+                self.pending_channels.pending_force_closing_channels[self._wcc_index].channel_point)
             self.fcc_cp_label.setText(
-                Channel.channel_point_str(
-                    self.pending_channels.pending_force_closing_channels[self._fcc_index].channel_point))
+                '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/">' + self.cp + '</a>')
+
             self.fcc_cap_label.setText(
                 str(self.pending_channels.pending_force_closing_channels[self._fcc_index].capacity))
             self.fcc_local_bal_label.setText(
@@ -814,18 +833,23 @@ class PendingChannelWidget(QtWidgets.QWidget):
         ###############################################################################
 
         if not self.pending_channels.pending_closing_channels:
-            self.tabWidget.removeTab(self._cc)
-            self._cc = -1
-            self._next_tab_index -= 1
-            self.prev_button.hide()
-            self.next_button.hide()
+            if self._cc > -1:
+                self.tabWidget.removeTab(self._cc)
+                self._cc = -1
+                self._next_tab_index -= 1
+                self.prev_button.hide()
+                self.next_button.hide()
         else:
             if self._cc:  # the tab does not exist, so create t
                 self.tabWidget.addTab(self.tab_2, "Closing Channels")
                 self._cc = self._next_tab_index
                 self._next_tab_index += 1
-            self.cc_cp_label.setText(Channel.channel_point_str(
-                self.pending_channels.pending_closing_channels[self._cc_index].channel_point))
+
+            self.cp = Channel.channel_point_str(
+                self.pending_channels.pending_closing_channels[self._cc_index].channel_point)
+            self.cc_cp_label.setText(
+                '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/">' + self.cp + '</a>')
+
             self.cc_cap_label.setText(str(self.pending_channels.pending_closing_channels[self._cc_index].capacity))
             self.cc_lb_label.setText(str(self.pending_channels.pending_closing_channels[self._cc_index].local_balance))
             self.cc_rb_label.setText(str(self.pending_channels.pending_closing_channels[self._cc_index].remote_balance))
@@ -849,18 +873,23 @@ class PendingChannelWidget(QtWidgets.QWidget):
         ###############################################################################
 
         if not self.pending_channels.pending_open_channels:
-            self.tabWidget.removeTab(self._poc)
-            self._poc = -1
-            self._next_tab_index -= 1
-            self.prev_button.hide()
-            self.next_button.hide()
+            if self._poc > -1:
+                self.tabWidget.removeTab(self._poc)
+                self._poc = -1
+                self._next_tab_index -= 1
+                self.prev_button.hide()
+                self.next_button.hide()
         else:
             if self._poc == -1:  # the tab does not exist, so create it
                 self.tabWidget.addTab(self.tab, "Pending Open Channels")
                 self._poc = self._next_tab_index
                 self._next_tab_index += 1
+
+            self.cp = Channel.channel_point_str(
+                self.pending_channels.pending_open_channels[self._poc_index].channel_point)
             self.poc_cp_label.setText(
-                Channel.channel_point_str(self.pending_channels.pending_open_channels[self._poc_index].channel_point))
+                '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/">' + self.cp + '</a>')
+
             self.poc_cap_label.setText(str(self.pending_channels.pending_open_channels[self._poc_index].capacity))
             self.poc_lb_label.setText(str(self.pending_channels.pending_open_channels[self._poc_index].local_balance))
             self.poc_rb_label.setText(str(self.pending_channels.pending_open_channels[self._poc_index].remote_balance))
@@ -880,3 +909,10 @@ class PendingChannelWidget(QtWidgets.QWidget):
                     self.prev_button.show()
                 else:
                     self.prev_button.hide()
+
+        self.tabWidget.currentChanged.connect(self._tab_changed)
+
+    def open_block_explorer(self, linkStr):
+        cp = self.cp.split(':')[0]
+        url = 'https://blockstream.info/tx/' + cp
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl(url))

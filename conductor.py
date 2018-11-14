@@ -28,10 +28,8 @@ from lightning import test_lnd_connection
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-
-# TODO 1: add splash screen
 # TODO 2: Add some basic exception handling
-# TODO 3: Add channel policy update window - global, node, based on ration local and remote balance
+# TODO 3: Add channel policy update window - global, node, based on ratio local and remote balance
 # TODO 4: Add overview of inactive channels - toggle between node colours and green (active) red (inactive) nodes
 # TODO 5: Add auto refresh every hour
 
@@ -131,6 +129,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dockBalanceWidget.setWidget(BalanceInfoWidget())
         self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.TopDockWidgetArea), self.dockBalanceWidget)
 
+        self.scheduler = None
         # because the containing view for ChannelInfoWidget did not exist on time of creation
         # of the object, the object can not show itself
         self.channelInfoWidget.show()
@@ -151,9 +150,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 if __name__ == "__main__":
-
     app = QtWidgets.QApplication(sys.argv)
     w = MainWindow()
     w.setStyleSheet(DarkTheme.get_style_sheet())
     w.showMaximized()
-    sys.exit(app.exec_())
+    app.exec_()
+    QtWidgets.QApplication.closeAllWindows()
+    exit(0)

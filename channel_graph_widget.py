@@ -62,6 +62,4 @@ class ChannelGraphWidget(QtWidgets.QWidget):
         for i in ChannelGraphPicture.instructions:
             if isinstance(i, NodeInstruction):
                 if i.get_window_position().contains(event.pos()):
-                    self.channel_info_widget.update_info(i.chan_id)
-
-
+                    self.channel_info_widget.update(i.chan_id)

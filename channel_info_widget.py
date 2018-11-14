@@ -15,12 +15,68 @@
 
 from lightning import lightning_channel
 from PyQt5 import QtCore, QtWidgets, QtGui
+from stylesheets.dark_theme import DarkTheme
 
 
 class ChannelInfoWidget(QtWidgets.QWidget):
+    class SatPerByte(QtWidgets.QDialog):
+        def __init__(self, parent):
+            super().__init__()
+
+            self.parent = parent
+            self.setObjectName("sat_byte_dialog")
+            self.setWindowTitle("Input sat/byte")
+            self.resize(650, 180)
+            self.formLayoutWidget = QtWidgets.QWidget(self)
+            self.formLayoutWidget.setGeometry(QtCore.QRect(30, 30, 590, 100))
+            self.formLayoutWidget.setObjectName("formLayoutWidget")
+            self.formLayout = QtWidgets.QFormLayout(self.formLayoutWidget)
+            self.formLayout.setContentsMargins(0, 0, 0, 0)
+            self.formLayout.setObjectName("formLayout")
+            self.label = QtWidgets.QLabel(self.formLayoutWidget)
+            self.label.setObjectName("label")
+            self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
+            self.sat_per_byte_edit = QtWidgets.QLineEdit(self.formLayoutWidget)
+            self.sat_per_byte_edit.setObjectName("sat_per_byte_edit")
+            self.sat_per_byte_edit.setInputMask('9999')
+            self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.sat_per_byte_edit)
+
+            self.buttonBox = QtWidgets.QDialogButtonBox(self)
+            self.buttonBox.setGeometry(QtCore.QRect(280, 110, 341, 50))
+            self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+            self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
+            self.buttonBox.setObjectName("buttonBox")
+
+            self.setModal(True)
+            self.setStyleSheet(DarkTheme.get_style_sheet())
+            self.label.setText('Commit fee in sat/byte:')
+            self.sat_per_byte_edit.setText('1')
+
+            self.buttonBox.accepted.connect(self.accept)
+            self.buttonBox.rejected.connect(self.reject)
+
+        def accept(self):
+            self.parent.sat_per_byte = int(self.sat_per_byte_edit.text())
+            if self.parent.sat_per_byte > 20:
+                mb_reply = QtWidgets.QMessageBox.question(self,
+                                                          'Are you sure?', "Do you really want to pay "
+                                                          + str(self.parent.sat_per_byte) + " sat/byte commit fee",
+                                                          QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                                          QtWidgets.QMessageBox.No)
+                if mb_reply == QtWidgets.QMessageBox.No:
+                    # Setting the amount to 0 will effectively cancel the open channel command
+                    self.parent.sat_per_byte = 0
+            self.hide()
+
+        def reject(self):
+            self.parent.sat_per_byte = 0
+            self.hide()
+
     def __init__(self, channel_id=0):
         super().__init__()
 
+        self.sat_per_byte = 0
+        self.sat_per_byte_form = None
         # self.resize(600, 600)
         self.channel_id = channel_id
         self.channel_name_label = QtWidgets.QLabel(self)
@@ -204,25 +260,17 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.formLayout_3.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_42)
 
         self.channel_point_label = QtWidgets.QLabel(self.formLayoutWidget_3)
-        font = QtGui.QFont()
-        font.setPointSize(9.5)
-        self.channel_point_label.setFont(font)
         self.channel_point_label.setObjectName("channel_point_label")
-        self.channel_point_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        # self.channel_point_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.channel_point_label.linkActivated.connect(self.open_block_explorer)
         self.formLayout_3.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.channel_point_label)
 
         self.remote_pubkey_label = QtWidgets.QLabel(self.formLayoutWidget_3)
-        font = QtGui.QFont()
-        font.setPointSize(9.5)
-        self.remote_pubkey_label.setFont(font)
         self.remote_pubkey_label.setObjectName("remote_pubkey_label")
         self.remote_pubkey_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout_3.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.remote_pubkey_label)
 
         self.uri_label = QtWidgets.QLabel(self.formLayoutWidget_3)
-        font = QtGui.QFont()
-        font.setPointSize(9.5)
-        self.uri_label.setFont(font)
         self.uri_label.setObjectName("uri_label")
         self.uri_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout_3.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.uri_label)
@@ -238,6 +286,12 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.close_channel_push_button.setObjectName("close_channel_push_button")
         self.close_channel_push_button.setText("Close Channel")
         self.close_channel_push_button.clicked.connect(self.close_channel)
+
+        self.channel_policy_push_button = QtWidgets.QPushButton(self)
+        self.channel_policy_push_button.setGeometry(QtCore.QRect(450, 690, 300, 48))
+        self.channel_policy_push_button.setObjectName("channel_policy_push_button")
+        self.channel_policy_push_button.setText("Set Channel Policy")
+        self.channel_policy_push_button.clicked.connect(self.set_channel_policy)
 
         self.channel_name_label.setText("TextLabel")
         self.label.setText("Active:")
@@ -278,12 +332,12 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.uri_label.setText("TextLabel")
 
         if self.channel_id != 0:
-            self.update_info(channel_id)
+            self.update(channel_id)
         # don't show the object yet, because it is forward created
         # in order for the channel list to access this object
         # to update info
 
-    def update_info(self, channel_id):
+    def update(self, channel_id):
         self.channel_id = channel_id
         channel = lightning_channel.Channels.channel_index[channel_id][0]
         if channel.channel_state == lightning_channel.Channel.ChannelState.ACTIVE:
@@ -293,7 +347,10 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.channel_name_label.setText(channel.remote_node_alias)
         self.active_label.setText(str(channel.channel_state))
         self.remote_pubkey_label.setText(channel.remote_pubkey)
-        self.channel_point_label.setText(lightning_channel.Channel.channel_point_str(channel.channel_point))
+
+        cp = lightning_channel.Channel.channel_point_str(channel.channel_point)
+        self.channel_point_label.setText(
+            '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/">' + cp + '</a>')
         self.channel_id_label.setText(str(channel.chan_id))
         self.capacity_label.setText(str(channel.capacity))
         self.local_balance_label.setText(str(channel.local_balance))
@@ -317,7 +374,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
             channel = lightning_channel.Channels.channel_index[self.channel_id][0]
             channel.reconnect()
             lightning_channel.Channels.read_channels()
-            self.update_info(self.channel_id)
+            self.update(self.channel_id)
             if self.active_label.text() == 'INACTIVE':
                 mb = QtWidgets.QMessageBox()
                 mb.about(self, "Reconnect error", "Unable to reconnect with node. Try again later")
@@ -327,11 +384,24 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
     def close_channel(self, event):
         channel = lightning_channel.Channels.channel_index[self.channel_id][0]
-        button_reply = QtWidgets.QMessageBox.question(self,
-                                                     'Close channel',
-                                                     "Do you realy want to close the channel?\n" +
-                                                     "This cannot be undone!!!",
-                                                     QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
-                                                     QtWidgets.QMessageBox.No)
-        if button_reply == QtWidgets.QMessageBox.Yes:
-            channel.close_channel()
+        self.sat_per_byte_form = ChannelInfoWidget.SatPerByte(self)
+        self.sat_per_byte_form.show()
+        self.sat_per_byte_form.exec_()
+        if self.sat_per_byte > 0:
+            button_reply = QtWidgets.QMessageBox.question(self,
+                                                          'Close channel',
+                                                          "Do you realy want to close the channel?\n" +
+                                                          "This cannot be undone!!!",
+                                                          QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                                          QtWidgets.QMessageBox.No)
+            if button_reply == QtWidgets.QMessageBox.Yes:
+                channel.close_channel()
+
+    def set_channel_policy(self):
+        print('set channel policy')
+
+    def open_block_explorer(self, linkStr):
+        channel = lightning_channel.Channels.channel_index[self.channel_id][0]
+        cp = lightning_channel.Channel.channel_point_str(channel.channel_point).split(':')[0]
+        url = 'https://blockstream.info/tx/' + cp
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl(url))

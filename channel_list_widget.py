@@ -41,11 +41,11 @@ class ChannelListWidget(QtWidgets.QWidget):
                     first_item = item
                 self.list_widget.addItem(item)
         self.list_widget.setCurrentItem(first_item)
-        self.channel_info_widget.update_info(self.list_widget.currentItem().data(QtCore.Qt.UserRole))
+        self.channel_info_widget.update(self.list_widget.currentItem().data(QtCore.Qt.UserRole))
         self.show()
 
         # connect the click of an item
         self.list_widget.clicked.connect(self.list_click_event)
 
     def list_click_event(self, event):
-        self.channel_info_widget.update_info(self.list_widget.currentItem().data(QtCore.Qt.UserRole))
+        self.channel_info_widget.update(self.list_widget.currentItem().data(QtCore.Qt.UserRole))

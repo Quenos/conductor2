@@ -179,7 +179,7 @@ class NodeInfoWidget(QtWidgets.QDialog):
         self.amount_form.show()
         self.amount_form.exec_()
         if self.amount_allocate > 0:
-            Channels.open_channel(self.public_key_edit.text(),
+            Channels.open_channel(self.pub_key_label.text(),
                                   self.amount_allocate,
                                   self.sat_per_byte,
                                   self.address_label.text())
