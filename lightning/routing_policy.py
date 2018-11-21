@@ -42,12 +42,3 @@ class RoutingPolicy(object):
     @staticmethod
     def clear_graph():
         RoutingPolicy._graph = None
-
-
-if __name__ == "__main__":
-    sc = SystemConfiguration()
-    sc.admin_macaroon_directory = '/home/coen/data'
-    sc.tls_cert_directory = '/home/coen/data'
-    sc.lnd_rpc_address = '178.164.174.219'
-    sc.lnd_rpc_port = '10009'
-    rp = RoutingPolicy(True)
