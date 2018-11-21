@@ -18,12 +18,12 @@ from lightning.lndAL import LndAL
 
 
 class RoutingPolicy(object):
-    graph = None
+    _graph = None
 
     def __init__(self, channel_point):
-        if not RoutingPolicy.graph:
-            RoutingPolicy.graph = LndAL.describe_graph()
-        for edge in RoutingPolicy.graph.edges:
+        if not RoutingPolicy._graph:
+            RoutingPolicy._graph = LndAL.describe_graph()
+        for edge in RoutingPolicy._graph.edges:
             if edge.chan_point == channel_point:
                 self.node1_pub = edge.node1_pub
                 self.node2_pub = edge.node2_pub
@@ -41,7 +41,7 @@ class RoutingPolicy(object):
 
     @staticmethod
     def clear_graph():
-        RoutingPolicy.graph = None
+        RoutingPolicy._graph = None
 
 
 if __name__ == "__main__":
