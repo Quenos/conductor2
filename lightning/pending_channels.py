@@ -157,14 +157,3 @@ class PendingChannels(object):
             self.pending_force_closing_channels.append((PendingForceClosingChannel(pending_force_closing_channel)))
         for waiting_close_channel in pending_channels.waiting_close_channels:
             self.waiting_close_channels.append((WaitingCloseChannel(waiting_close_channel)))
-
-
-if __name__ == "__main__":
-    sc = SystemConfiguration()
-    sc.admin_macaroon_directory = '/home/coen/data'
-    sc.tls_cert_directory = '/home/coen/data'
-    sc.lnd_rpc_address = '192.168.0.110'
-    sc.lnd_rpc_port = '10009'
-    pc = PendingChannels()
-    pc.read_pending_channels()
-    print(pc)
