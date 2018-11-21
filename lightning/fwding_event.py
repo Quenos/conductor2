@@ -51,14 +51,3 @@ class FwdingEvents(object):
                 e = FwdingEvent(fwding_event)
                 self.forwarding_events.append(e)
 
-
-if __name__ == "__main__":
-    sc = SystemConfiguration()
-    sc.admin_macaroon_directory = '/home/coen/data'
-    sc.tls_cert_directory = '/home/coen/data'
-    sc.lnd_rpc_address = '178.164.174.219'
-    sc.lnd_rpc_port = '10009'
-
-    history = lndAL.LndAL.forwarding_history(start_time=int(time.time()) - 1000000, end_time=int(time.time()))
-    fwding_events = FwdingEvents(history.forwarding_events)
-    print(fwding_events.cons_fwd_events_per_node)
