@@ -41,12 +41,3 @@ class ChannelFee(object):
         self.fee_per_mil = channel_fee.fee_per_mil
         self.fee_rate = channel_fee.fee_rate
 
-
-if __name__ == "__main__":
-    sc = SystemConfiguration()
-    sc.admin_macaroon_directory = '/home/coen/data'
-    sc.tls_cert_directory = '/home/coen/data'
-    sc.lnd_rpc_address = ''
-    sc.lnd_rpc_port = '10009'
-    x = FeeReport()
-    print(x)
