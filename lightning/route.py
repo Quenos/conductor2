@@ -75,39 +75,3 @@ class Route:
             + str(self.total_amt_msat)
         return ret_val
 
-
-routes_response = lndAL.LndAL.query_routes('0232e20e7b68b9b673fb25f48322b151a93186bffe4550045040673797ceca43cf', amt=510000, fee_limit=lndAL.LndAL.set_fee_limit(5, 1))
-h = rpc_pb2.Route()
-h.total_time_lock = 17
-print(routes_response.routes[0])
-channels = lndAL.LndAL.list_channels(active_only=True)
-unbalanced = []
-for channel in channels.channels:
-    if channel.remote_balance < channel.local_balance / 4:
-        unbalanced.append(channel.chan_id)
-routes = []
-for route in routes_response.routes:
-    r = Route()
-    r.total_time_lock = route.total_time_lock
-    r.total_fees = route.total_fees
-    r.total_amt = route.total_amt
-    for route_hop in route.hops:
-        h = hop.Hop()
-        h.chan_id = route_hop.chan_id
-        h.fee_msat = route_hop.fee_msat
-        h.fee = route_hop.fee
-        h.expiry = route_hop.expiry
-        h.amt_to_forward = route_hop.amt_to_forward
-        h.chan_capacity = route_hop.chan_capacity
-        r.add_hop(h)
-    r.total_fees_msat = route.total_fees_msat
-    r.total_amt_msat = route.total_amt_msat
-    routes.append(r)
-for route in routes:
-    for chan_id in unbalanced:
-        if chan_id in route:
-            # print(chan_id, " found")
-            # print(route.hops[0])
-            # print('\n')
-            a = str(route)
-            # print(a)
