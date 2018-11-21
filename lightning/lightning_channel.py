@@ -17,6 +17,8 @@
 import ipaddress
 from config.config import SystemConfiguration
 from lightning import lndAL
+from lightning.fee_report import FeeReport
+from lightning.routing_policy import RoutingPolicy
 from collections import defaultdict
 from enum import Enum
 from abc import ABC, abstractmethod
@@ -59,7 +61,7 @@ class BaseChannel(ABC):
                 self.remote_node_alias = "Unknown"
                 self.remote_node_colour = 0x000000
             else:
-                raise ex
+                raise
         self.channel_type = ""
 
     def update_channel(self, channel):
@@ -133,6 +135,10 @@ class OpenChannel(Channel):
             self.pending_htlcs.append(htlc)
         self.csv_delay = channel.csv_delay
         self.private = channel.private
+        self.channel_fee = []
+        if self.channel_point:
+            self.channel_fee = FeeReport().get_channel_fee(BaseChannel.channel_point_str(self.channel_point))
+            self.routing_policy = RoutingPolicy(BaseChannel.channel_point_str(self.channel_point))
 
     def update_channel(self, channel):
         super(OpenChannel, self).update_channel(channel)
@@ -154,6 +160,9 @@ class OpenChannel(Channel):
             self.pending_htlcs.append(htlc)
         self.csv_delay = channel.csv_delay
         self.private = channel.private
+        if self.channel_point:
+            self.channel_fee = BaseChannel.channel_point_str(FeeReport().get_channel_fee(self.channel_point))
+            self.routing_policy = RoutingPolicy(BaseChannel.channel_point_str(self.channel_point))
 
     def reconnect(self):
         try:
@@ -230,6 +239,8 @@ class Channels(object):
         # read channels: Empties the existing channels list,
         #                reads the open and closed channels
         #                re-creates the channel list with the current state
+        #                Also the routing policy is cleared
+        RoutingPolicy.clear_graph()
         Channels.channel_index = defaultdict(list)
         Channels._read_open_channels()
         Channels._read_closed_channels()
@@ -280,6 +291,13 @@ class Channels(object):
             return response
         except Exception as ex:
             raise ex
+
+    @staticmethod
+    def update_channel_policy(chan_point, base_fee_msat=1000, fee_rate=0.000001, time_lock_delta=144):
+        lndAL.LndAL.update_channel_policy(chan_point=chan_point,
+                                          base_fee_msat=base_fee_msat,
+                                          fee_rate=fee_rate,
+                                          time_lock_delta=time_lock_delta)
 
     @staticmethod
     def manage_channel_fees():

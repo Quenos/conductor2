@@ -14,6 +14,7 @@
 #
 
 from lightning import lndAL
+from config.config import SystemConfiguration
 
 
 class FeeReport(object):
@@ -26,6 +27,12 @@ class FeeReport(object):
         self.week_fee_sum = fee_report.week_fee_sum
         self.month_fee_sum = fee_report.month_fee_sum
 
+    def get_channel_fee(self, channel_point):
+        for channel_fee in self.channel_fees:
+            if channel_fee.chan_point == channel_point:
+                return channel_fee
+        return None
+
 
 class ChannelFee(object):
     def __init__(self, channel_fee):
@@ -36,5 +43,10 @@ class ChannelFee(object):
 
 
 if __name__ == "__main__":
+    sc = SystemConfiguration()
+    sc.admin_macaroon_directory = '/home/coen/data'
+    sc.tls_cert_directory = '/home/coen/data'
+    sc.lnd_rpc_address = '178.164.174.219'
+    sc.lnd_rpc_port = '10009'
     x = FeeReport()
     print(x)

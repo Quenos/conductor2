@@ -33,7 +33,10 @@ class SystemConfiguration(object, metaclass=Singleton):
         self._tls_cert_directory = ''
         self._lnd_rpc_address = ''
         self._lnd_rpc_port = ''
-        pass
+        self._default_sat_per_byte = 0
+        self._default_time_lock_delta = 144
+        self._default_base_fee_msat = 1000
+        self._default_fee_rate = 0.000001
 
     @property
     def admin_macaroon_directory(self):
@@ -67,6 +70,38 @@ class SystemConfiguration(object, metaclass=Singleton):
     def lnd_rpc_port(self, value):
         self._lnd_rpc_port = value
 
+    @property
+    def default_sat_per_byte(self):
+        return self._default_sat_per_byte
+
+    @default_sat_per_byte.setter
+    def default_sat_per_byte(self, value):
+        self._default_sat_per_byte = value
+
+    @property
+    def default_time_lock_delta(self):
+        return self._default_time_lock_delta
+
+    @default_time_lock_delta.setter
+    def default_time_lock_delta(self, value):
+        self._default_time_lock_delta = value
+
+    @property
+    def default_base_fee_msat(self):
+        return self._default_base_fee_msat
+
+    @default_base_fee_msat.setter
+    def default_base_fee_msat(self, value):
+        self._default_base_fee_msat = value
+
+    @property
+    def default_fee_rate(self):
+        return self._default_fee_rate
+
+    @default_fee_rate.setter
+    def default_fee_rate(self, value):
+        self._default_fee_rate = value
+
     def read_config(self):
         if not os.path.isfile('./config/conductor.conf'):
             raise FileNotFoundError
@@ -76,6 +111,10 @@ class SystemConfiguration(object, metaclass=Singleton):
         self._tls_cert_directory = config['DIRECTORIES']['tls_cert']
         self._lnd_rpc_address = config['ADDRESSES']['lnd_rpc_address']
         self._lnd_rpc_port = config['ADDRESSES']['lnd_rpc_port']
+        self._default_sat_per_byte = config['SETTINGS']['default_sat_per_byte']
+        self._default_base_fee_msat = config['SETTINGS']['default_base_fee_msat']
+        self._default_fee_rate = config['SETTINGS']['default_fee_rate']
+        self._default_time_lock_delta = config['SETTINGS']['default_time_lock_delta']
 
     def write_config(self):
         config = configparser.ConfigParser()
@@ -83,5 +122,10 @@ class SystemConfiguration(object, metaclass=Singleton):
                                  'tls_cert': self._tls_cert_directory}
         config['ADDRESSES'] = {'lnd_rpc_address': self._lnd_rpc_address,
                                'lnd_rpc_port': self._lnd_rpc_port}
+        config['SETTINGS'] = {'default_sat_per_byte': self._default_sat_per_byte,
+                              'default_base_fee_msat': self._default_base_fee_msat,
+                              'default_fee_rate': self._default_fee_rate,
+                              'default_time_lock_delta': self._default_time_lock_delta}
+
         with open('./config/conductor.conf', 'w') as configfile:
             config.write(configfile)

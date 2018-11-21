@@ -26,6 +26,7 @@ class ChannelGraphWidget(QtWidgets.QWidget):
         self.channel_info_widget = channel_info_widget
 
         # draw center node (HomeNode - your node)
+        home_node = None
         try:
             home_node = lightning_node.HomeNode()
         except IOError:

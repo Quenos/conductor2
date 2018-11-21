@@ -44,7 +44,8 @@ class Node(object):
                         break
             except Exception as ex:
                 raise ex
-
+        else:
+            self.address = 'private'
         self.color = color
 
     @staticmethod

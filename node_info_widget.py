@@ -18,6 +18,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from lightning.lightning_node import Node
 from lightning.lightning_channel import Channels
 from stylesheets.dark_theme import DarkTheme
+from config.config import SystemConfiguration
 
 
 class NodeInfoWidget(QtWidgets.QDialog):
@@ -40,7 +41,7 @@ class NodeInfoWidget(QtWidgets.QDialog):
             self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
             self.amount_edit = QtWidgets.QLineEdit(self.formLayoutWidget)
             self.amount_edit.setObjectName("amount_edit")
-            self.amount_edit.setInputMask('99999999')
+            self.amount_edit.setInputMask('00000000')
             self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.amount_edit)
 
             self.label_2 = QtWidgets.QLabel(self.formLayoutWidget)
@@ -49,7 +50,7 @@ class NodeInfoWidget(QtWidgets.QDialog):
 
             self.sat_per_byte_edit = QtWidgets.QLineEdit(self.formLayoutWidget)
             self.sat_per_byte_edit.setObjectName('sat_per_byte_edit')
-            self.sat_per_byte_edit.setInputMask('9999')
+            self.sat_per_byte_edit.setInputMask('0000')
             self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.sat_per_byte_edit)
 
             self.buttonBox = QtWidgets.QDialogButtonBox(self)
@@ -62,7 +63,8 @@ class NodeInfoWidget(QtWidgets.QDialog):
             self.setStyleSheet(DarkTheme.get_style_sheet())
             self.label.setText('Amount to allocate to channel:')
             self.label_2.setText('Commit fee in sat/byte:')
-            self.sat_per_byte_edit.setText('1')
+            sc = SystemConfiguration()
+            self.sat_per_byte_edit.setText(sc.default_sat_per_byte)
 
             self.buttonBox.accepted.connect(self.accept)
             self.buttonBox.rejected.connect(self.reject)
@@ -203,7 +205,6 @@ class NodeInfoWidget(QtWidgets.QDialog):
             self.node_alias.setText("")
 
     def find_node(self, event):
-        print("search and thy shall find")
         if self.public_key_edit.text():
             self.node = Node.find_node(self.public_key_edit.text())
         elif self.node_alias_edit.text():

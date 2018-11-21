@@ -16,10 +16,11 @@
 from lightning import lightning_channel
 from PyQt5 import QtCore, QtWidgets, QtGui
 from stylesheets.dark_theme import DarkTheme
+from config.config import SystemConfiguration
 
 
 class ChannelInfoWidget(QtWidgets.QWidget):
-    class SatPerByte(QtWidgets.QDialog):
+    class SatPerByteWidget(QtWidgets.QDialog):
         def __init__(self, parent):
             super().__init__()
 
@@ -38,7 +39,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
             self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
             self.sat_per_byte_edit = QtWidgets.QLineEdit(self.formLayoutWidget)
             self.sat_per_byte_edit.setObjectName("sat_per_byte_edit")
-            self.sat_per_byte_edit.setInputMask('9999')
+            self.sat_per_byte_edit.setInputMask('0000')
             self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.sat_per_byte_edit)
 
             self.buttonBox = QtWidgets.QDialogButtonBox(self)
@@ -50,7 +51,8 @@ class ChannelInfoWidget(QtWidgets.QWidget):
             self.setModal(True)
             self.setStyleSheet(DarkTheme.get_style_sheet())
             self.label.setText('Commit fee in sat/byte:')
-            self.sat_per_byte_edit.setText('1')
+            sc = SystemConfiguration()
+            self.sat_per_byte_edit.setText(sc.default_sat_per_byte)
 
             self.buttonBox.accepted.connect(self.accept)
             self.buttonBox.rejected.connect(self.reject)
@@ -64,19 +66,103 @@ class ChannelInfoWidget(QtWidgets.QWidget):
                                                           QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
                                                           QtWidgets.QMessageBox.No)
                 if mb_reply == QtWidgets.QMessageBox.No:
-                    # Setting the amount to 0 will effectively cancel the open channel command
-                    self.parent.sat_per_byte = 0
+                    # Setting the sat_per_byte to -1 will cancel the close channel command
+                    self.parent.sat_per_byte = -1
             self.hide()
 
         def reject(self):
-            self.parent.sat_per_byte = 0
+            self.parent.sat_per_byte = -1
+            self.hide()
+
+    class ChannelPolicyWidget(QtWidgets.QDialog):
+        def __init__(self, parent):
+            super().__init__()
+
+            self.parent = parent
+            self.setObjectName("chan_policy_dialog")
+            self.setWindowTitle("Set Channel Policy")
+            self.resize(650, 300)
+            self.formLayoutWidget = QtWidgets.QWidget(self)
+            self.formLayoutWidget.setGeometry(QtCore.QRect(30, 30, 590, 220))
+            self.formLayoutWidget.setObjectName("formLayoutWidget")
+            self.formLayout = QtWidgets.QFormLayout(self.formLayoutWidget)
+            self.formLayout.setContentsMargins(0, 0, 0, 0)
+            self.formLayout.setObjectName("formLayout")
+
+            self.label = QtWidgets.QLabel(self.formLayoutWidget)
+            self.label.setObjectName("label")
+            self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
+            self.base_fee_msat_edit = QtWidgets.QDoubleSpinBox(self.formLayoutWidget)
+            self.base_fee_msat_edit.setObjectName("base_fee_msat_edit")
+            self.base_fee_msat_edit.setMinimum(-100000)
+            self.base_fee_msat_edit.setMaximum(100000)
+            self.base_fee_msat_edit.setDecimals(0)
+            self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.base_fee_msat_edit)
+
+            self.label_2 = QtWidgets.QLabel(self.formLayoutWidget)
+            self.label_2.setObjectName("label_2")
+            self.formLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_2)
+            self.fee_rate_edit = QtWidgets.QDoubleSpinBox(self.formLayoutWidget)
+            self.fee_rate_edit.setMinimum(0.0)
+            self.fee_rate_edit.setMaximum(10.0)
+            self.fee_rate_edit.setDecimals(6)
+            self.fee_rate_edit.setSingleStep(0.000001)
+            self.fee_rate_edit.setObjectName("fee_rate_edit")
+            self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.fee_rate_edit)
+
+            self.label_3 = QtWidgets.QLabel(self.formLayoutWidget)
+            self.label_3.setObjectName("label_3")
+            self.formLayout.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_3)
+            self.time_lock_delta_edit = QtWidgets.QDoubleSpinBox(self.formLayoutWidget)
+            self.time_lock_delta_edit.setMinimum(0)
+            self.time_lock_delta_edit.setMaximum(1000)
+            self.time_lock_delta_edit.setDecimals(0)
+            self.time_lock_delta_edit.setObjectName("time_lock_delta_edit")
+
+            self.formLayout.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.time_lock_delta_edit)
+
+            self.buttonBox = QtWidgets.QDialogButtonBox(self)
+            self.buttonBox.setGeometry(QtCore.QRect(280, 230, 341, 50))
+            self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+            self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel | QtWidgets.QDialogButtonBox.Ok)
+            self.buttonBox.setObjectName("buttonBox")
+
+            self.setModal(True)
+            self.setStyleSheet(DarkTheme.get_style_sheet())
+            self.label.setText('Base fee (msat):')
+            self.label_2.setText('Fee rate:')
+            self.label_3.setText('Time lock delta:')
+            sc = SystemConfiguration()
+            self.base_fee_msat_edit.setValue(float(sc.default_base_fee_msat))
+            self.fee_rate_edit.setValue(float(sc.default_fee_rate))
+            self.time_lock_delta_edit.setValue(float(sc.default_time_lock_delta))
+
+            self.buttonBox.accepted.connect(self.accept)
+            self.buttonBox.rejected.connect(self.reject)
+
+        def accept(self):
+            self.parent.base_fee_msat = int(self.base_fee_msat_edit.value())
+            self.parent.fee_rate = self.fee_rate_edit.value()
+            self.parent.time_lock_delta = int(self.time_lock_delta_edit.value())
+            self.hide()
+
+        def reject(self):
+            # setting the fee rate to -1 indicates cancelling the change channel policy
+            self.parent.fee_rate = -1
             self.hide()
 
     def __init__(self, channel_id=0):
         super().__init__()
 
+        sc = SystemConfiguration()
+        self.cp = 0
         self.sat_per_byte = 0
         self.sat_per_byte_form = None
+        self.set_channel_policy_form = None
+        self.base_fee_msat = sc.default_base_fee_msat
+        self.fee_rate = sc.default_fee_rate
+        self.time_lock_delta = sc.default_time_lock_delta
+
         # self.resize(600, 600)
         self.channel_id = channel_id
         self.channel_name_label = QtWidgets.QLabel(self)
@@ -170,6 +256,15 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.fee_per_kw_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout.setWidget(7, QtWidgets.QFormLayout.FieldRole, self.fee_per_kw_label)
 
+        self.label_100 = QtWidgets.QLabel(self.formLayoutWidget)
+        self.label_100.setObjectName("label_100")
+        self.formLayout.setWidget(8, QtWidgets.QFormLayout.LabelRole, self.label_100)
+
+        self.base_fee_label = QtWidgets.QLabel(self.formLayoutWidget)
+        self.base_fee_label.setObjectName("base_fee_label")
+        self.base_fee_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.formLayout.setWidget(8, QtWidgets.QFormLayout.FieldRole, self.base_fee_label)
+
         self.formLayoutWidget_2 = QtWidgets.QWidget(self)
         self.formLayoutWidget_2.setGeometry(QtCore.QRect(610, 80, 621, 431))
         self.formLayoutWidget_2.setObjectName("formLayoutWidget_2")
@@ -179,69 +274,87 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
         self.label_18 = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.label_18.setObjectName("label_18")
-        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_18)
+        self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_18)
 
         self.label_19 = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.label_19.setObjectName("label_19")
-        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_19)
+        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_19)
 
         self.unsettled_balance_label = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.unsettled_balance_label.setObjectName("unsettled_balance_label")
         self.unsettled_balance_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.unsettled_balance_label)
+        self.formLayout_2.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.unsettled_balance_label)
 
         self.tot_sat_sent_label = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.tot_sat_sent_label.setObjectName("tot_sat_sent_label")
         self.tot_sat_sent_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.tot_sat_sent_label)
+        self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.tot_sat_sent_label)
 
         self.tot_sat_received_label = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.tot_sat_received_label.setObjectName("tot_sat_received_label")
         self.tot_sat_received_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.tot_sat_received_label)
+        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.tot_sat_received_label)
 
         self.label_20 = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.label_20.setObjectName("label_20")
-        self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_20)
+        self.formLayout_2.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_20)
 
         self.label_21 = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.label_21.setObjectName("label_21")
-        self.formLayout_2.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.label_21)
+        self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_21)
 
         self.num_updates_label = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.num_updates_label.setObjectName("num_updates_label")
         self.num_updates_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        self.formLayout_2.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.num_updates_label)
+        self.formLayout_2.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.num_updates_label)
 
         self.label_29 = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.label_29.setObjectName("label_29")
-        self.formLayout_2.setWidget(5, QtWidgets.QFormLayout.LabelRole, self.label_29)
+        self.formLayout_2.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.label_29)
 
         self.pending_htlcs_label = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.pending_htlcs_label.setObjectName("pending_htlcs_label")
         self.pending_htlcs_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        self.formLayout_2.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.pending_htlcs_label)
+        self.formLayout_2.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.pending_htlcs_label)
 
         self.label_31 = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.label_31.setObjectName("label_31")
-        self.formLayout_2.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.label_31)
+        self.formLayout_2.setWidget(5, QtWidgets.QFormLayout.LabelRole, self.label_31)
 
         self.csv_label = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.csv_label.setObjectName("csv_label")
         self.csv_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        self.formLayout_2.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.csv_label)
+        self.formLayout_2.setWidget(5, QtWidgets.QFormLayout.FieldRole, self.csv_label)
 
         self.label_33 = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.label_33.setObjectName("label_33")
-        self.formLayout_2.setWidget(7, QtWidgets.QFormLayout.LabelRole, self.label_33)
+        self.formLayout_2.setWidget(6, QtWidgets.QFormLayout.LabelRole, self.label_33)
 
         self.private_label = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.private_label.setObjectName("private_label")
         self.private_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        self.formLayout_2.setWidget(7, QtWidgets.QFormLayout.FieldRole, self.private_label)
+        self.formLayout_2.setWidget(6, QtWidgets.QFormLayout.FieldRole, self.private_label)
+
+        self.label_101 = QtWidgets.QLabel(self.formLayoutWidget)
+        self.label_101.setObjectName("label_101")
+        self.formLayout_2.setWidget(7, QtWidgets.QFormLayout.LabelRole, self.label_101)
+
+        self.fee_rate_label = QtWidgets.QLabel(self.formLayoutWidget)
+        self.fee_rate_label.setObjectName("fee_rate_label")
+        self.fee_rate_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.formLayout_2.setWidget(7, QtWidgets.QFormLayout.FieldRole, self.fee_rate_label)
+
+        self.label_102 = QtWidgets.QLabel(self.formLayoutWidget)
+        self.label_102.setObjectName("label_102")
+        self.formLayout_2.setWidget(8, QtWidgets.QFormLayout.LabelRole, self.label_102)
+
+        self.time_lock_delta_label = QtWidgets.QLabel(self.formLayoutWidget)
+        self.time_lock_delta_label.setObjectName("time_lock_label")
+        self.time_lock_delta_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.formLayout_2.setWidget(8, QtWidgets.QFormLayout.FieldRole, self.time_lock_delta_label)
 
         self.formLayoutWidget_3 = QtWidgets.QWidget(self)
-        self.formLayoutWidget_3.setGeometry(QtCore.QRect(0, 471, 1251, 150))
+        self.formLayoutWidget_3.setGeometry(QtCore.QRect(0, 500, 1500, 150))
         self.formLayoutWidget_3.setObjectName("formLayoutWidget_3")
         self.formLayout_3 = QtWidgets.QFormLayout(self.formLayoutWidget_3)
         self.formLayout_3.setContentsMargins(50, 0, 0, 0)
@@ -330,6 +443,12 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.private_label.setText("TextLabel")
         self.label_42.setText("Uri:")
         self.uri_label.setText("TextLabel")
+        self.label_100.setText("Base fee per msat:")
+        self.base_fee_label.setText("TextLabel")
+        self.label_101.setText("Fee rate:")
+        self.fee_rate_label.setText("TextLabel")
+        self.label_102.setText("Time lock delta:")
+        self.time_lock_delta_label.setText("TextLabel")
 
         if self.channel_id != 0:
             self.update(channel_id)
@@ -337,8 +456,10 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         # in order for the channel list to access this object
         # to update info
 
-    def update(self, channel_id):
+    def update(self, channel_id, cold_update=False):
         self.channel_id = channel_id
+        if cold_update:
+            lightning_channel.Channels.read_channels()
         channel = lightning_channel.Channels.channel_index[channel_id][0]
         if channel.channel_state == lightning_channel.Channel.ChannelState.ACTIVE:
             self.reconnect_push_button.hide()
@@ -365,6 +486,13 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         # TODO: add pending htlcs link
         if not channel.pending_htlcs:
             self.pending_htlcs_label.setText("No pending HTLC")
+        self.base_fee_label.setText(str(channel.channel_fee.base_fee_msat))
+        self.fee_rate_label.setText(str(channel.channel_fee.fee_rate))
+        # if node 1 equals remote end of the channel, use node 2 and vice versa
+        if channel.routing_policy.node1_pub == channel.remote_pubkey:
+            self.time_lock_delta_label.setText(str(channel.routing_policy.node2_time_lock_delta))
+        else:
+            self.time_lock_delta_label.setText(str(channel.routing_policy.node1_time_lock_delta))
         self.csv_label.setText(str(channel.csv_delay))
         self.private_label.setText(str(channel.private))
         self.uri_label.setText(channel.remote_uri)
@@ -373,8 +501,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         try:
             channel = lightning_channel.Channels.channel_index[self.channel_id][0]
             channel.reconnect()
-            lightning_channel.Channels.read_channels()
-            self.update(self.channel_id)
+            self.update(self.channel_id, cold_update=True)
             if self.active_label.text() == 'INACTIVE':
                 mb = QtWidgets.QMessageBox()
                 mb.about(self, "Reconnect error", "Unable to reconnect with node. Try again later")
@@ -384,13 +511,13 @@ class ChannelInfoWidget(QtWidgets.QWidget):
 
     def close_channel(self, event):
         channel = lightning_channel.Channels.channel_index[self.channel_id][0]
-        self.sat_per_byte_form = ChannelInfoWidget.SatPerByte(self)
+        self.sat_per_byte_form = ChannelInfoWidget.SatPerByteWidget(self)
         self.sat_per_byte_form.show()
         self.sat_per_byte_form.exec_()
-        if self.sat_per_byte > 0:
+        if self.sat_per_byte > -1:
             button_reply = QtWidgets.QMessageBox.question(self,
                                                           'Close channel',
-                                                          "Do you realy want to close the channel?\n" +
+                                                          "Do you really want to close the channel?\n" +
                                                           "This cannot be undone!!!",
                                                           QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
                                                           QtWidgets.QMessageBox.No)
@@ -398,7 +525,16 @@ class ChannelInfoWidget(QtWidgets.QWidget):
                 channel.close_channel()
 
     def set_channel_policy(self):
-        print('set channel policy')
+        self.set_channel_policy_form = ChannelInfoWidget.ChannelPolicyWidget(self)
+        self.set_channel_policy_form.show()
+        self.set_channel_policy_form.exec_()
+        if self.fee_rate > -1:
+            channel = lightning_channel.Channels.channel_index[self.channel_id][0]
+            lightning_channel.Channels.update_channel_policy(channel.channel_point,
+                                                             base_fee_msat=self.base_fee_msat,
+                                                             fee_rate=self.fee_rate,
+                                                             time_lock_delta=self.time_lock_delta)
+        self.update(self.channel_id, cold_update=True)
 
     def open_block_explorer(self, linkStr):
         channel = lightning_channel.Channels.channel_index[self.channel_id][0]
