@@ -231,13 +231,3 @@ class LndAL(object):
     def set_fee_limit(fixed=0, percent=0):
         val = {"fixed": fixed, "percent": percent}
         return val
-
-
-if __name__ == "__main__":
-    sc = SystemConfiguration()
-    sc.admin_macaroon_directory = '/home/coen/data'
-    sc.tls_cert_directory = '/home/coen/data'
-    sc.lnd_rpc_address = '192.168.0.110'
-    sc.lnd_rpc_port = '10009'
-    r = LndAL.pending_channels()
-    print(r)
