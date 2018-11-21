@@ -81,14 +81,3 @@ class HomeNode(object):
     def __init__(self):
         info = lndAL.LndAL.get_info()
         self.name = info.alias
-
-
-if __name__ == "__main__":
-    sc = SystemConfiguration()
-    sc.admin_macaroon_directory = '/home/coen/data'
-    sc.tls_cert_directory = '/home/coen/data'
-    sc.lnd_rpc_address = '192.168.0.110'
-    sc.lnd_rpc_port = '10009'
-    node = Node.find_node(pub_key='026d9b9c8e55b435f117496e6a885fba7bf76530a5aa6f8f61304f84f9a31dda0')
-    #    node = Node.find_node(alias='Quenos [LND]')
-    print(node)
