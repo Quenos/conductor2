@@ -338,16 +338,3 @@ class Channels(object):
             if channel[0].channel_point == chan_point:
                 return channel[0]
         return None
-
-
-if __name__ == "__main__":
-    sc = SystemConfiguration()
-    sc.admin_macaroon_directory = '/home/coen/data'
-    sc.tls_cert_directory = '/home/coen/data'
-    sc.lnd_rpc_address = '192.168.0.110'
-    sc.lnd_rpc_port = '10009'
-    channels = Channels()
-    channels.read_channels()
-    x = channels.find_by_chan_point('689cad04801d33e7a9a2fefacb1208cbf28ddb5daf9e2837b06009827da57930:1')
-    print(x)
-#    channels.manage_channel_fees()
