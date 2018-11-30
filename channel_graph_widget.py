@@ -1,5 +1,3 @@
-from instruction import CenterNode, CenterNodeInstruction, ChannelGraphPicture, Node, NodeInstruction
-from lightning import lightning_node, lightning_channel
 # Copyright 2018 <Quenos Blockchain R&D KFT>
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
@@ -16,6 +14,8 @@ from lightning import lightning_node, lightning_channel
 #
 
 from PyQt5 import QtCore, QtWidgets, QtGui
+from instruction import CenterNode, CenterNodeInstruction, ChannelGraphPicture, Node, NodeInstruction
+from lightning import lightning_node, lightning_channel
 
 
 class ChannelGraphWidget(QtWidgets.QWidget):
@@ -23,8 +23,18 @@ class ChannelGraphWidget(QtWidgets.QWidget):
 
     def __init__(self, channel_info_widget):
         super().__init__()
+        self._stop_repaint = False
         self.channel_info_widget = channel_info_widget
+        self.update()
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.update)
+        self.timer.start(1000 * 60 * 60)  # update once every hour
 
+        self.show()
+
+    def update(self):
+        ChannelGraphPicture.reset()
+        self._stop_repaint = True
         # draw center node (HomeNode - your node)
         home_node = None
         try:
@@ -38,11 +48,9 @@ class ChannelGraphWidget(QtWidgets.QWidget):
         pen = QtGui.QPen(colour, 4)
 
         instruction = CenterNodeInstruction(center_node, pen)
-        ChannelGraphPicture.instructions.append(instruction)
+        ChannelGraphPicture._instructions.append(instruction)
 
         # draw the nodes and channels connect to the center node
-        channels = ChannelGraphWidget.channels
-        channels.read_channels()
         for c in lightning_channel.Channels.channel_index:
             channel = lightning_channel.Channels.channel_index[c][0]
             if channel.channel_type == "open_channel":
@@ -51,16 +59,22 @@ class ChannelGraphWidget(QtWidgets.QWidget):
                 pen = QtGui.QPen(colour, 4)
                 node = Node(channel.remote_node_alias)
                 instruction = NodeInstruction(node, pen, channel.chan_id)
-                ChannelGraphPicture.instructions.append(instruction)
-        self.show()
+                ChannelGraphPicture._instructions.append(instruction)
+        if ChannelGraphPicture._instructions[1]:
+            self.channel_info_widget.update(ChannelGraphPicture._instructions[1].chan_id)
+        self._stop_repaint = False
 
     def paintEvent(self, event):
         qp = QtGui.QPainter(self)
-        for instruction in ChannelGraphPicture.instructions:
+        for instruction in ChannelGraphPicture._instructions:
             instruction.paint(self, qp)
 
     def mousePressEvent(self, event):
-        for i in ChannelGraphPicture.instructions:
+        for i in ChannelGraphPicture._instructions:
             if isinstance(i, NodeInstruction):
-                if i.get_window_position().contains(event.pos()):
-                    self.channel_info_widget.update(i.chan_id)
+                try:
+                    if i.get_window_position().contains(event.pos()):
+                        self.channel_info_widget.update(i.chan_id)
+                        break
+                except AttributeError:
+                    pass

@@ -14,12 +14,10 @@
 #
 
 import time
-from lightning import lndAL
-from collections import defaultdict
-from config.config import SystemConfiguration
+from lightning.lndAL import LndAL
 
 
-class FwdingEvent:
+class FwdingEvent(object):
     def __init__(self, fwding_event=None):
         if fwding_event:
             self.timestamp = fwding_event.timestamp
@@ -30,24 +28,32 @@ class FwdingEvent:
             self.fee = fwding_event.fee
 
 
-class ConsolidatedForwardingEvent(object):
-
-    def __init__(self,
-                 total_amt_in=0,
-                 total_amt_out=0,
-                 alias=""):
-        self.total_amt_in = total_amt_in
-        self.total_amt_out = total_amt_out
-        self.alias = alias
-
-
 class FwdingEvents(object):
 
-    def __init__(self, fwding_history=None):
-        self.cons_fwd_events_per_node = defaultdict(list)
+    def __init__(self):
         self.forwarding_events = []
-        if fwding_history:
-            for fwding_event in fwding_history:
-                e = FwdingEvent(fwding_event)
-                self.forwarding_events.append(e)
+        forwarding_history = LndAL.forwarding_history(end_time=int(time.time()), num_max_events=9999999)
+        for fwding_event in forwarding_history.forwarding_events:
+            e = FwdingEvent(fwding_event)
+            self.forwarding_events.append(e)
 
+    def get_total_in_out_fee_amount(self, chan_id):
+        in_amt = 0
+        out_amt = 0
+        fee_amt = 0
+        for forwarding_event in self.forwarding_events:
+            if forwarding_event.chan_id_in == chan_id:
+                in_amt += forwarding_event.amt_in
+                fee_amt += forwarding_event.fee
+            elif forwarding_event.chan_id_out == chan_id:
+                out_amt += forwarding_event.amt_out
+                fee_amt += forwarding_event.fee
+        return in_amt, out_amt, fee_amt
+
+    def get_date_last_forward(self, chan_id):
+        timestamp = 0
+        for forwarding_event in self.forwarding_events:
+            if (chan_id == forwarding_event.chan_id_in or chan_id == forwarding_event.chan_id_out) \
+                    and timestamp < forwarding_event.timestamp:
+                timestamp = forwarding_event.timestamp
+        return timestamp

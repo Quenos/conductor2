@@ -30,6 +30,12 @@ class LndAL(object):
         status = StatusCode.UNAVAILABLE
         details = "Connect Failed"
         debug_error_string = "{"created":"@1542897540.782691997","description":"Failed to create subchannel","file":"src/core/ext/filters/client_channel/client_channel.cc","file_line":2721,"referenced_errors":[{"created":"@1542897540.782674777","description":"Pick Cancelled","file":"src/core/ext/filters/client_channel/lb_policy/pick_first/pick_first.cc","file_line":241,"referenced_errors":[{"created":"@1542897540.782478720","description":"Connect Failed","file":"src/core/ext/filters/client_channel/subchannel.cc","file_line":689,"grpc_status":14,"referenced_errors":[{"created":"@1542897540.782298936","description":"Handshake write failed","file":"src/core/lib/security/transport/security_handshaker.cc","file_line":347,"referenced_errors":[{"created":"@1542897540.782285043","description":"FD Shutdown","file":"src/core/lib/iomgr/lockfree_event.cc","file_line":194,"referenced_errors":[{"created":"@1542897540.782256648","description":"Handshake timed out","file":"src/core/lib/channel/handshaker.cc","file_line":290}]}]}]}]}]}"
+
+        grpc._channel._Rendezvous: <_Rendezvous of RPC that terminated with:
+        status = StatusCode.UNIMPLEMENTED
+        details = "unknown service lnrpc.Lightning"
+        debug_error_string = "{"created":"@1543505526.607347974","description":"Error received from peer","file":"src/core/lib/surface/call.cc","file_line":1017,"grpc_message":"unknown service lnrpc.Lightning","grpc_status":12}"
+
         '''
         pass
 

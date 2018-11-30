@@ -15,7 +15,7 @@
 
 from enum import Enum
 from PyQt5 import QtCore, QtWidgets, QtGui
-
+from abc import ABC, abstractmethod
 
 class Location(Enum):
     BOTTOM = 0
@@ -24,7 +24,7 @@ class Location(Enum):
     LEFT = 3
 
 
-class Instruction:
+class Instruction(ABC):
     _cp_width = 0
     _cp_height = 0
     MARGIN = 20
@@ -40,6 +40,14 @@ class Instruction:
         if self._pen:
             painter.setPen(self._pen)
 
+    @abstractmethod
+    def reset(self):
+        # set all variables etc to their initial state
+        Instruction._cp_width = 0
+        Instruction._cp_height = 0
+        Instruction.MARGIN = 20
+        Instruction.MIN_RECT_WIDTH = 280
+
 
 class LineInstruction(Instruction):
     def __init__(self, line, pen=None):
@@ -50,6 +58,9 @@ class LineInstruction(Instruction):
         super().paint(widget, painter)
         painter.drawLine(self._line)
 
+    def reset(self):
+        super().reset()
+
 
 class RectInstruction(Instruction):
     def __init__(self, rect, pen=None):
@@ -59,6 +70,9 @@ class RectInstruction(Instruction):
     def paint(self, widget, painter):
         super().paint(widget, painter)
         painter.drawRect(self._rect)
+
+    def reset(self):
+        super().reset()
 
 
 class NodeInstruction(Instruction):
@@ -166,6 +180,12 @@ class NodeInstruction(Instruction):
         else:
             raise ValueError
 
+    def reset(self):
+        super().reset()
+        NodeInstruction._offset_x = Instruction.MARGIN
+        NodeInstruction._offset_y = Instruction.MARGIN
+        NodeInstruction._location = Location.BOTTOM
+
 
 class CenterNodeInstruction(Instruction):
 
@@ -187,6 +207,9 @@ class CenterNodeInstruction(Instruction):
         painter.drawRect(rect_lu_x, rect_lu_y, rect_width, rect_height)
         painter.drawText(rect_lu_x + 10, rect_lu_y + text_height, self._center_node.text)
 
+    def reset(self):
+        super().reset()
+
 
 class TextInstruction(Instruction):
     def __init__(self, text, pen=None):
@@ -197,9 +220,19 @@ class TextInstruction(Instruction):
         super().paint(widget, painter)
         painter.drawText(self._text)
 
+    def reset(self):
+        super().reset()
 
-class ChannelGraphPicture:
-    instructions = []
+
+class ChannelGraphPicture(object):
+    _instructions = []
+
+    @staticmethod
+    def reset():
+        for instruction in ChannelGraphPicture._instructions:
+            instruction.reset()
+        Node.reset()
+        ChannelGraphPicture._instructions = []
 
 
 class Node(object):
@@ -212,6 +245,10 @@ class Node(object):
 
     def get_node_index(self):
         return self._index
+
+    @staticmethod
+    def reset():
+        Node._index = 0
 
 
 class CenterNode(Node):

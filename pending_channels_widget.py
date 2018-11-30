@@ -23,7 +23,8 @@ class PendingChannelWidget(QtWidgets.QWidget):
         super().__init__()
 
         self.pending_channels = None
-        self.cp = 0
+        self.cp = None
+        self.txid = None
         self.setObjectName("PendingChannels")
 
         self.channel_name_label = QtWidgets.QLabel(self)
@@ -338,8 +339,9 @@ class PendingChannelWidget(QtWidgets.QWidget):
         font = QtGui.QFont()
         font.setPointSize(11)
         self.fcc_ctid_label.setFont(font)
-        self.fcc_ctid_label.setTextInteractionFlags(
-            QtCore.Qt.LinksAccessibleByMouse | QtCore.Qt.TextSelectableByKeyboard | QtCore.Qt.TextSelectableByMouse)
+        # self.fcc_ctid_label.setTextInteractionFlags(
+        #    QtCore.Qt.LinksAccessibleByMouse | QtCore.Qt.TextSelectableByKeyboard | QtCore.Qt.TextSelectableByMouse)
+        self.fcc_ctid_label.linkActivated.connect(self.open_block_explorer)
         self.fcc_ctid_label.setObjectName("fcc_ctid_label")
 
         self.formLayout_7.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.fcc_ctid_label)
@@ -749,10 +751,15 @@ class PendingChannelWidget(QtWidgets.QWidget):
                 self._wcc = self._next_tab_index
                 self._next_tab_index += 1
 
+            self.channel_name_label.setText(
+                self.pending_channels.waiting_close_channels[self._wcc_index].remote_node_alias)
+
             self.cp = Channel.channel_point_str(
                 self.pending_channels.waiting_close_channels[self._wcc_index].channel_point)
-            self.wcc_cp_label.setText(
-                '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/">' + self.cp + '</a>')
+            link = '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/tx/' \
+                   + self.cp.split(':')[0] + '">' \
+                   + self.cp + '</a>'
+            self.wcc_cp_label.setText(link)
 
             self.wcc_cap_label.setText(str(self.pending_channels.waiting_close_channels[self._wcc_index].capacity))
             self.wcc_local_bal_label.setText(
@@ -794,9 +801,11 @@ class PendingChannelWidget(QtWidgets.QWidget):
                 self.pending_channels.pending_force_closing_channels[self._fcc_index].remote_node_alias)
 
             self.cp = Channel.channel_point_str(
-                self.pending_channels.pending_force_closing_channels[self._wcc_index].channel_point)
-            self.fcc_cp_label.setText(
-                '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/">' + self.cp + '</a>')
+                self.pending_channels.pending_force_closing_channels[self._fcc_index].channel_point)
+            link = '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/tx/' + self.cp.split(':')[0] \
+                   + '">' \
+                   + self.cp + '</a>'
+            self.fcc_cp_label.setText(link)
 
             self.fcc_cap_label.setText(
                 str(self.pending_channels.pending_force_closing_channels[self._fcc_index].capacity))
@@ -804,8 +813,10 @@ class PendingChannelWidget(QtWidgets.QWidget):
                 str(self.pending_channels.pending_force_closing_channels[self._fcc_index].local_balance))
             self.fcc_remote_bal_label.setText(
                 str(self.pending_channels.pending_force_closing_channels[self._fcc_index].remote_balance))
-            self.fcc_ctid_label.setText(
-                self.pending_channels.pending_force_closing_channels[self._fcc_index].closing_txid)
+            self.txid = self.pending_channels.pending_force_closing_channels[self._fcc_index].closing_txid
+            link = '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/tx/' + self.txid + '">' \
+                   + self.txid + '</a>'
+            self.fcc_ctid_label.setText(link)
             self.fcc_limbo_bal_label.setText(
                 str(self.pending_channels.pending_force_closing_channels[self._fcc_index].limbo_balance))
             self.fcc_mh_label.setText(
@@ -845,10 +856,14 @@ class PendingChannelWidget(QtWidgets.QWidget):
                 self._cc = self._next_tab_index
                 self._next_tab_index += 1
 
+            self.channel_name_label.setText(
+                self.pending_channels.pending_closing_channels[self._cc_index].remote_node_alias)
+
             self.cp = Channel.channel_point_str(
                 self.pending_channels.pending_closing_channels[self._cc_index].channel_point)
-            self.cc_cp_label.setText(
-                '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/">' + self.cp + '</a>')
+            link = '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/tx/' + self.cp.split(':')[0] \
+                   + '">' + self.cp + '</a>'
+            self.cc_cp_label.setText(link)
 
             self.cc_cap_label.setText(str(self.pending_channels.pending_closing_channels[self._cc_index].capacity))
             self.cc_lb_label.setText(str(self.pending_channels.pending_closing_channels[self._cc_index].local_balance))
@@ -885,10 +900,14 @@ class PendingChannelWidget(QtWidgets.QWidget):
                 self._poc = self._next_tab_index
                 self._next_tab_index += 1
 
+            self.channel_name_label.setText('')
+
             self.cp = Channel.channel_point_str(
                 self.pending_channels.pending_open_channels[self._poc_index].channel_point)
-            self.poc_cp_label.setText(
-                '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/">' + self.cp + '</a>')
+            link = '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/tx/' + self.cp.split(':')[0] \
+                   + '">' \
+                   + self.cp + '</a>'
+            self.poc_cp_label.setText(link)
 
             self.poc_cap_label.setText(str(self.pending_channels.pending_open_channels[self._poc_index].capacity))
             self.poc_lb_label.setText(str(self.pending_channels.pending_open_channels[self._poc_index].local_balance))
@@ -912,7 +931,6 @@ class PendingChannelWidget(QtWidgets.QWidget):
 
         self.tabWidget.currentChanged.connect(self._tab_changed)
 
-    def open_block_explorer(self, linkStr):
-        cp = self.cp.split(':')[0]
-        url = 'https://blockstream.info/tx/' + cp
-        QtGui.QDesktopServices.openUrl(QtCore.QUrl(url))
+    @staticmethod
+    def open_block_explorer(link_str):
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl(link_str))

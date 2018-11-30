@@ -13,9 +13,11 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+from datetime import date
 from lightning import lightning_channel
 from PyQt5 import QtCore, QtWidgets, QtGui
 from stylesheets.dark_theme import DarkTheme
+from lightning.fwding_event import FwdingEvents
 from config.config import SystemConfiguration
 
 
@@ -37,9 +39,11 @@ class ChannelInfoWidget(QtWidgets.QWidget):
             self.label = QtWidgets.QLabel(self.formLayoutWidget)
             self.label.setObjectName("label")
             self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
-            self.sat_per_byte_edit = QtWidgets.QLineEdit(self.formLayoutWidget)
+            self.sat_per_byte_edit = QtWidgets.QDoubleSpinBox(self.formLayoutWidget)
+            self.sat_per_byte_edit.setMinimum(0)
+            self.sat_per_byte_edit.setMaximum(100000)
+            self.sat_per_byte_edit.setDecimals(0)
             self.sat_per_byte_edit.setObjectName("sat_per_byte_edit")
-            self.sat_per_byte_edit.setInputMask('0000')
             self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.sat_per_byte_edit)
 
             self.buttonBox = QtWidgets.QDialogButtonBox(self)
@@ -52,13 +56,13 @@ class ChannelInfoWidget(QtWidgets.QWidget):
             self.setStyleSheet(DarkTheme.get_style_sheet())
             self.label.setText('Commit fee in sat/byte:')
             sc = SystemConfiguration()
-            self.sat_per_byte_edit.setText(sc.default_sat_per_byte)
+            self.sat_per_byte_edit.setValue(float(sc.default_sat_per_byte))
 
             self.buttonBox.accepted.connect(self.accept)
             self.buttonBox.rejected.connect(self.reject)
 
         def accept(self):
-            self.parent.sat_per_byte = int(self.sat_per_byte_edit.text())
+            self.parent.sat_per_byte = int(self.sat_per_byte_edit.value())
             if self.parent.sat_per_byte > 20:
                 mb_reply = QtWidgets.QMessageBox.question(self,
                                                           'Are you sure?', "Do you really want to pay "
@@ -94,7 +98,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
             self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
             self.base_fee_msat_edit = QtWidgets.QDoubleSpinBox(self.formLayoutWidget)
             self.base_fee_msat_edit.setObjectName("base_fee_msat_edit")
-            self.base_fee_msat_edit.setMinimum(-100000)
+            self.base_fee_msat_edit.setMinimum(0)
             self.base_fee_msat_edit.setMaximum(100000)
             self.base_fee_msat_edit.setDecimals(0)
             self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.base_fee_msat_edit)
@@ -155,6 +159,8 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         super().__init__()
 
         sc = SystemConfiguration()
+        self.forwarding_events = FwdingEvents()
+
         self.cp = 0
         self.sat_per_byte = 0
         self.sat_per_byte_form = None
@@ -354,39 +360,78 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.formLayout_2.setWidget(8, QtWidgets.QFormLayout.FieldRole, self.time_lock_delta_label)
 
         self.formLayoutWidget_3 = QtWidgets.QWidget(self)
-        self.formLayoutWidget_3.setGeometry(QtCore.QRect(0, 500, 1500, 150))
+        self.formLayoutWidget_3.setGeometry(QtCore.QRect(1300, 80, 600, 431))
         self.formLayoutWidget_3.setObjectName("formLayoutWidget_3")
         self.formLayout_3 = QtWidgets.QFormLayout(self.formLayoutWidget_3)
-        self.formLayout_3.setContentsMargins(50, 0, 0, 0)
+        self.formLayout_3.setContentsMargins(0, 0, 0, 0)
         self.formLayout_3.setObjectName("formLayout_3")
 
-        self.label_2 = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.label_300 = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.label_300.setObjectName("label_300")
+        self.formLayout_3.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_300)
+        self.amt_in_label = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.amt_in_label.setObjectName("amount_in_label")
+        self.amt_in_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.formLayout_3.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.amt_in_label)
+
+        self.label_301 = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.label_301.setObjectName("label_301")
+        self.formLayout_3.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_301)
+        self.amt_out_label = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.amt_out_label.setObjectName("amount_out_label")
+        self.amt_out_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.formLayout_3.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.amt_out_label)
+
+        self.label_302 = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.label_302.setObjectName("label_302")
+        self.formLayout_3.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_302)
+        self.fee_label = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.fee_label.setObjectName("fee_label")
+        self.fee_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.formLayout_3.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.fee_label)
+
+        self.label_303 = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.label_303.setObjectName("label_303")
+        self.formLayout_3.setWidget(3, QtWidgets.QFormLayout.LabelRole, self.label_303)
+        self.date_label = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.date_label.setObjectName("date_label")
+        self.date_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.formLayout_3.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.date_label)
+
+        self.formLayoutWidget_4 = QtWidgets.QWidget(self)
+        self.formLayoutWidget_4.setGeometry(QtCore.QRect(0, 500, 1500, 150))
+        self.formLayoutWidget_4.setObjectName("formLayoutWidget_3")
+        self.formLayout_4 = QtWidgets.QFormLayout(self.formLayoutWidget_4)
+        self.formLayout_4.setContentsMargins(50, 0, 0, 0)
+        self.formLayout_4.setObjectName("formLayout_3")
+
+        self.label_2 = QtWidgets.QLabel(self.formLayoutWidget_4)
         self.label_2.setObjectName("label_2")
-        self.formLayout_3.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_2)
+        self.formLayout_4.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label_2)
 
-        self.label_3 = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.label_3 = QtWidgets.QLabel(self.formLayoutWidget_4)
         self.label_3.setObjectName("label_3")
-        self.formLayout_3.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_3)
+        self.formLayout_4.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_3)
 
-        self.label_42 = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.label_42 = QtWidgets.QLabel(self.formLayoutWidget_4)
         self.label_42.setObjectName("label_4")
-        self.formLayout_3.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_42)
+        self.formLayout_4.setWidget(2, QtWidgets.QFormLayout.LabelRole, self.label_42)
 
-        self.channel_point_label = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.channel_point_label = QtWidgets.QLabel(self.formLayoutWidget_4)
         self.channel_point_label.setObjectName("channel_point_label")
         # self.channel_point_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.channel_point_label.linkActivated.connect(self.open_block_explorer)
-        self.formLayout_3.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.channel_point_label)
+        self.formLayout_4.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.channel_point_label)
 
-        self.remote_pubkey_label = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.remote_pubkey_label = QtWidgets.QLabel(self.formLayoutWidget_4)
         self.remote_pubkey_label.setObjectName("remote_pubkey_label")
         self.remote_pubkey_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        self.formLayout_3.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.remote_pubkey_label)
+        self.formLayout_4.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.remote_pubkey_label)
 
-        self.uri_label = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.uri_label = QtWidgets.QLabel(self.formLayoutWidget_4)
         self.uri_label.setObjectName("uri_label")
         self.uri_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        self.formLayout_3.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.uri_label)
+        self.formLayout_4.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.uri_label)
 
         self.reconnect_push_button = QtWidgets.QPushButton(self)
         self.reconnect_push_button.setGeometry(QtCore.QRect(900, 690, 250, 48))
@@ -449,6 +494,10 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.fee_rate_label.setText("TextLabel")
         self.label_102.setText("Time lock delta:")
         self.time_lock_delta_label.setText("TextLabel")
+        self.label_300.setText('Total forwarded amount in:')
+        self.label_301.setText('Total forwarded amount out:')
+        self.label_302.setText('Total fees received:')
+        self.label_303.setText('Date last forward (UTC):')
 
         if self.channel_id != 0:
             self.update(channel_id)
@@ -496,6 +545,16 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.csv_label.setText(str(channel.csv_delay))
         self.private_label.setText(str(channel.private))
         self.uri_label.setText(channel.remote_uri)
+
+        amt_in, amt_out, fee = self.forwarding_events.get_total_in_out_fee_amount(self.channel_id)
+        self.amt_in_label.setText(str(amt_in))
+        self.amt_out_label.setText(str(amt_out))
+        self.fee_label.setText(str(fee))
+        last_forward = self.forwarding_events.get_date_last_forward(self.channel_id)
+        if last_forward:
+            self.date_label.setText(str(date.fromtimestamp(last_forward)))
+        else:
+            self.date_label.setText('---')
 
     def reconnect_channel(self, event):
         try:

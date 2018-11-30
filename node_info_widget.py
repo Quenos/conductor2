@@ -17,6 +17,7 @@ from datetime import datetime
 from PyQt5 import QtCore, QtGui, QtWidgets
 from lightning.lightning_node import Node
 from lightning.lightning_channel import Channels
+from lightning.fwding_event import FwdingEvents
 from stylesheets.dark_theme import DarkTheme
 from config.config import SystemConfiguration
 
