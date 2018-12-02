@@ -57,7 +57,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings_dialog = None
         self.node_info_dialog = None
 
-        self.resize(3000, 1700)
+        self.resize(50, 50)
         centralwidget = QtWidgets.QWidget(self)
         centralwidget.setObjectName("centralwidget")
         self.setCentralWidget(centralwidget)
@@ -92,32 +92,31 @@ class MainWindow(QtWidgets.QMainWindow):
         self.channelInfoWidget = ChannelInfoWidget()
 
         self.dockGraphWidget = QtWidgets.QDockWidget("Lightning Channel Graph", self)
-        self.dockGraphWidget.setMinimumSize(QtCore.QSize(2075, 700))
+        self.dockGraphWidget.setMinimumSize(QtCore.QSize(1035, 440))
         self.dockGraphWidget.setObjectName("dockGraphWidget")
         self.dockGraphWidget.setWidget(ChannelGraphWidget(self.channelInfoWidget))
         self.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.dockGraphWidget)
 
-        # instead the pending channels widget goes here
         self.dockPendingChannelsWidget = QtWidgets.QDockWidget("Pending Channels", self)
-        self.dockPendingChannelsWidget.setMinimumSize(QtCore.QSize(1600, 700))
+        self.dockPendingChannelsWidget.setMinimumSize(QtCore.QSize(800, 400))
         self.dockPendingChannelsWidget.setObjectName("dockPendingChannelsWidget")
         self.dockPendingChannelsWidget.setWidget(PendingChannelWidget())
         self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.RightDockWidgetArea), self.dockPendingChannelsWidget)
 
         self.dockInfoWidget = QtWidgets.QDockWidget("Lightning Channel Info", self)
-        self.dockInfoWidget.setMinimumSize(QtCore.QSize(600, 650))
+        self.dockInfoWidget.setMinimumSize(QtCore.QSize(800, 440))
         self.dockInfoWidget.setObjectName("dockInfoWidget")
         self.dockInfoWidget.setWidget(self.channelInfoWidget)
         self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.LeftDockWidgetArea), self.dockInfoWidget)
 
         self.dockNodeInfoWidget = QtWidgets.QDockWidget("Node Info", self)
-        self.dockNodeInfoWidget.setMinimumSize(QtCore.QSize(600, 650))
+        self.dockNodeInfoWidget.setMinimumSize(QtCore.QSize(800, 400))
         self.dockNodeInfoWidget.setObjectName("dockInfoWidget")
         self.dockNodeInfoWidget.setWidget(NodeInfoWidget())
         self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.RightDockWidgetArea), self.dockNodeInfoWidget)
 
         self.dockBalanceWidget = QtWidgets.QDockWidget("Balance Info", self)
-        self.dockBalanceWidget.setMinimumSize(QtCore.QSize(1250, 200))
+        self.dockBalanceWidget.setMinimumSize(QtCore.QSize(1600, 75))
         self.dockBalanceWidget.setObjectName("dockBalanceWidget")
         self.dockBalanceWidget.setWidget(BalanceInfoWidget())
         self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.TopDockWidgetArea), self.dockBalanceWidget)
@@ -146,7 +145,7 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     w = MainWindow()
     w.setStyleSheet(DarkTheme.get_style_sheet())
-    w.showMaximized()
+    w.show()
     app.exec_()
     QtWidgets.QApplication.closeAllWindows()
     exit(0)

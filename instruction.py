@@ -17,6 +17,7 @@ from enum import Enum
 from PyQt5 import QtCore, QtWidgets, QtGui
 from abc import ABC, abstractmethod
 
+
 class Location(Enum):
     BOTTOM = 0
     RIGHT = 1
@@ -27,8 +28,8 @@ class Location(Enum):
 class Instruction(ABC):
     _cp_width = 0
     _cp_height = 0
-    MARGIN = 20
-    MIN_RECT_WIDTH = 280
+    MARGIN = 10
+    MIN_RECT_WIDTH = 155
 
     def __init__(self, pen=None):
         if pen:
@@ -45,8 +46,8 @@ class Instruction(ABC):
         # set all variables etc to their initial state
         Instruction._cp_width = 0
         Instruction._cp_height = 0
-        Instruction.MARGIN = 20
-        Instruction.MIN_RECT_WIDTH = 280
+        Instruction.MARGIN = 10
+        Instruction.MIN_RECT_WIDTH = 155
 
 
 class LineInstruction(Instruction):
@@ -105,7 +106,7 @@ class NodeInstruction(Instruction):
 
         # calculate the width and height of the node rectangle based on the length and height of the node name
         font_metrics = QtGui.QFontMetrics(widget.font())
-        text_width = font_metrics.width(self._node.text)
+        text_width = font_metrics.width(self._node.text) + 5
         text_height = font_metrics.height()
         rect_width = text_width + Instruction.MARGIN
         rect_height = text_height + Instruction.MARGIN / 2
@@ -138,7 +139,7 @@ class NodeInstruction(Instruction):
         # Safe and draw the node rectangle and write the name of the node in it
         self._set_window_position(rect_lu_x, rect_lu_y, rect_width, rect_height)
         painter.drawRect(rect_lu_x, rect_lu_y, rect_width, rect_height)
-        painter.drawText(rect_lu_x + 10, rect_lu_y + text_height, self._node.text)
+        painter.drawText(rect_lu_x + 8, rect_lu_y + text_height, self._node.text)
 
         # calculate the beginning and end point of the edge from the node to center node
         # this depends on the side of the window where the node is drawn

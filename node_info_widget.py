@@ -93,7 +93,7 @@ class NodeInfoWidget(QtWidgets.QDialog):
 
         self.node = None
         self.setObjectName("Form")
-        self.resize(1457, 700)
+        # self.resize(1457, 700)
         self.formLayoutWidget_2 = None
         self.formLayout_2 = None
         self.label_13 = None
@@ -106,10 +106,10 @@ class NodeInfoWidget(QtWidgets.QDialog):
         self.sat_per_byte = 1
         self.add_search_widget()
         self.formLayoutWidget = QtWidgets.QWidget(self)
-        self.formLayoutWidget.setGeometry(QtCore.QRect(30, 350, 1411, 211))
+        self.formLayoutWidget.setGeometry(QtCore.QRect(0, 200, 800, 500))
         self.formLayoutWidget.setObjectName("formLayoutWidget")
         self.formLayout = QtWidgets.QFormLayout(self.formLayoutWidget)
-        self.formLayout.setContentsMargins(0, 0, 0, 0)
+        self.formLayout.setContentsMargins(50, 0, 0, 0)
         self.formLayout.setObjectName("formLayout")
         self.label = QtWidgets.QLabel(self.formLayoutWidget)
         self.label.setObjectName("label")
@@ -136,7 +136,7 @@ class NodeInfoWidget(QtWidgets.QDialog):
         self.address_label.setObjectName("label_8")
         self.formLayout.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.address_label)
         self.node_alias = QtWidgets.QLabel(self)
-        self.node_alias.setGeometry(QtCore.QRect(630, 50, 400, 34))
+        self.node_alias.setGeometry(QtCore.QRect(300, 150, 200, 34))
         self.node_alias.setObjectName("node_alias")
 
         self.label_5 = QtWidgets.QLabel(self.formLayoutWidget)
@@ -148,7 +148,7 @@ class NodeInfoWidget(QtWidgets.QDialog):
         self.formLayout.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.last_update_label)
 
         self.open_chan_button = QtWidgets.QPushButton(self)
-        self.open_chan_button.setGeometry(QtCore.QRect(610, 600, 211, 48))
+        self.open_chan_button.setGeometry(QtCore.QRect(300, 350, 120, 25))
         self.open_chan_button.setObjectName("pushButton")
 
         QtCore.QMetaObject.connectSlotsByName(self)
@@ -216,10 +216,10 @@ class NodeInfoWidget(QtWidgets.QDialog):
 
     def add_search_widget(self):
         self.formLayoutWidget_2 = QtWidgets.QWidget(self)
-        self.formLayoutWidget_2.setGeometry(QtCore.QRect(30, 130, 1060, 121))
+        self.formLayoutWidget_2.setGeometry(QtCore.QRect(0, 60, 700, 200))
         self.formLayoutWidget_2.setObjectName("formLayoutWidget")
         self.formLayout_2 = QtWidgets.QFormLayout(self.formLayoutWidget_2)
-        self.formLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.formLayout_2.setContentsMargins(50, 0, 0, 0)
         self.formLayout_2.setObjectName("formLayout")
         self.label_13 = QtWidgets.QLabel(self.formLayoutWidget_2)
         self.label_13.setObjectName("label_13")
@@ -234,7 +234,7 @@ class NodeInfoWidget(QtWidgets.QDialog):
         self.public_key_edit.setObjectName("public_key_edit")
         self.formLayout_2.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.public_key_edit)
         self.find_button = QtWidgets.QPushButton(self)
-        self.find_button.setGeometry(QtCore.QRect(1120, 160, 100, 50))
+        self.find_button.setGeometry(QtCore.QRect(720, 75, 50, 30))
         self.find_button.setObjectName("pushButton")
 
         QtCore.QMetaObject.connectSlotsByName(self)

@@ -36,6 +36,11 @@ class LndAL(object):
         details = "unknown service lnrpc.Lightning"
         debug_error_string = "{"created":"@1543505526.607347974","description":"Error received from peer","file":"src/core/lib/surface/call.cc","file_line":1017,"grpc_message":"unknown service lnrpc.Lightning","grpc_status":12}"
 
+        grpc._channel._Rendezvous: <_Rendezvous of RPC that terminated with:
+        status = StatusCode.UNAVAILABLE
+        details = "Connect Failed"
+        debug_error_string = "{"created":"@1543670679.735250331","description":"Failed to create subchannel","file":"src/core/ext/filters/client_channel/client_channel.cc","file_line":2721,"referenced_errors":[{"created":"@1543670679.735240549","description":"Pick Cancelled","file":"src/core/ext/filters/client_channel/lb_policy/pick_first/pick_first.cc","file_line":241,"referenced_errors":[{"created":"@1543670679.735022159","description":"Connect Failed","file":"src/core/ext/filters/client_channel/subchannel.cc","file_line":689,"grpc_status":14,"referenced_errors":[{"created":"@1543670679.734841131","description":"Handshake read failed","file":"src/core/lib/security/transport/security_handshaker.cc","file_line":321,"referenced_errors":[{"created":"@1543670679.734745641","description":"FD Shutdown","file":"src/core/lib/iomgr/lockfree_event.cc","file_line":194,"referenced_errors":[{"created":"@1543670679.734720568","description":"Handshake timed out","file":"src/core/lib/channel/handshaker.cc","file_line":290}]}]}]}]}]}"
+
         '''
         pass
 

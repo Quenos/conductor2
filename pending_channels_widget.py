@@ -40,14 +40,14 @@ class PendingChannelWidget(QtWidgets.QWidget):
         self.channel_name_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
 
         self.tabWidget = QtWidgets.QTabWidget(self)
-        self.tabWidget.setGeometry(QtCore.QRect(40, 80, 1500, 520))
+        self.tabWidget.setGeometry(QtCore.QRect(50, 40, 725, 300))
         self.tabWidget.setTabPosition(QtWidgets.QTabWidget.South)
         self.tabWidget.setObjectName("tabWidget")
         self.tab = QtWidgets.QWidget()
         self.tab.setObjectName("tab")
 
         self.formLayoutWidget_7 = QtWidgets.QWidget(self.tab)
-        self.formLayoutWidget_7.setGeometry(QtCore.QRect(20, 20, 1641, 358))
+        self.formLayoutWidget_7.setGeometry(QtCore.QRect(20, 20, 800, 175))
         self.formLayoutWidget_7.setObjectName("formLayoutWidget_7")
 
         self.formLayout_11 = QtWidgets.QFormLayout(self.formLayoutWidget_7)
@@ -205,7 +205,7 @@ class PendingChannelWidget(QtWidgets.QWidget):
         self.tab_2.setObjectName("tab_2")
 
         self.formLayoutWidget_2 = QtWidgets.QWidget(self.tab_2)
-        self.formLayoutWidget_2.setGeometry(QtCore.QRect(20, 20, 1631, 241))
+        self.formLayoutWidget_2.setGeometry(QtCore.QRect(20, 20, 800, 175))
         self.formLayoutWidget_2.setObjectName("formLayoutWidget_2")
 
         self.formLayout_6 = QtWidgets.QFormLayout(self.formLayoutWidget_2)
@@ -320,7 +320,7 @@ class PendingChannelWidget(QtWidgets.QWidget):
         self.prev_button.setGeometry(QtCore.QRect(1400, 490, 55, 55))
 
         self.formLayoutWidget_3 = QtWidgets.QWidget(self.tab_5)
-        self.formLayoutWidget_3.setGeometry(QtCore.QRect(20, 20, 1621, 421))
+        self.formLayoutWidget_3.setGeometry(QtCore.QRect(20, 20, 800, 175))
         self.formLayoutWidget_3.setObjectName("formLayoutWidget_3")
 
         self.formLayout_7 = QtWidgets.QFormLayout(self.formLayoutWidget_3)
@@ -498,7 +498,7 @@ class PendingChannelWidget(QtWidgets.QWidget):
         self.tab_6.setObjectName("tab_6")
 
         self.formLayoutWidget_4 = QtWidgets.QWidget(self.tab_6)
-        self.formLayoutWidget_4.setGeometry(QtCore.QRect(10, 20, 1641, 220))
+        self.formLayoutWidget_4.setGeometry(QtCore.QRect(10, 20, 800, 175))
         self.formLayoutWidget_4.setObjectName("formLayoutWidget_4")
 
         self.formLayout_8 = QtWidgets.QFormLayout(self.formLayoutWidget_4)

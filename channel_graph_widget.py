@@ -24,6 +24,7 @@ class ChannelGraphWidget(QtWidgets.QWidget):
     def __init__(self, channel_info_widget):
         super().__init__()
         self._stop_repaint = False
+        self.pen_width = 2
         self.channel_info_widget = channel_info_widget
         self.update()
         self.timer = QtCore.QTimer()
@@ -45,7 +46,7 @@ class ChannelGraphWidget(QtWidgets.QWidget):
             exit(-1)
         center_node = CenterNode(home_node.name)
         colour = QtGui.QColor(QtCore.Qt.darkGreen)
-        pen = QtGui.QPen(colour, 4)
+        pen = QtGui.QPen(colour, self.pen_width)
 
         instruction = CenterNodeInstruction(center_node, pen)
         ChannelGraphPicture._instructions.append(instruction)
@@ -56,7 +57,7 @@ class ChannelGraphWidget(QtWidgets.QWidget):
             if channel.channel_type == "open_channel":
                 # TODO: make node colour configurable
                 colour = QtGui.QColor(int(channel.remote_node_colour[1:], 16))
-                pen = QtGui.QPen(colour, 4)
+                pen = QtGui.QPen(colour, self.pen_width)
                 node = Node(channel.remote_node_alias)
                 instruction = NodeInstruction(node, pen, channel.chan_id)
                 ChannelGraphPicture._instructions.append(instruction)

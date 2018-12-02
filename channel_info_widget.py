@@ -169,14 +169,13 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.fee_rate = sc.default_fee_rate
         self.time_lock_delta = sc.default_time_lock_delta
 
-        # self.resize(600, 600)
         self.channel_id = channel_id
         self.channel_name_label = QtWidgets.QLabel(self)
-        self.channel_name_label.setGeometry(QtCore.QRect(200, 0, 700, 80))
+        self.channel_name_label.setGeometry(QtCore.QRect(200, 0, 700, 60))
         font = QtGui.QFont()
         font.setPointSize(16)
         font.setBold(True)
-        font.setWeight(75)
+        # font.setWeight(75)
         self.channel_name_label.setFont(font)
         self.channel_name_label.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.channel_name_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -184,7 +183,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.channel_name_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
 
         self.formLayoutWidget = QtWidgets.QWidget(self)
-        self.formLayoutWidget.setGeometry(QtCore.QRect(0, 80, 610, 431))
+        self.formLayoutWidget.setGeometry(QtCore.QRect(0, 60, 300, 200))
         self.formLayoutWidget.setObjectName("formLayoutWidget")
         self.formLayout = QtWidgets.QFormLayout(self.formLayoutWidget)
         self.formLayout.setContentsMargins(50, 0, 0, 0)
@@ -272,7 +271,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.formLayout.setWidget(8, QtWidgets.QFormLayout.FieldRole, self.base_fee_label)
 
         self.formLayoutWidget_2 = QtWidgets.QWidget(self)
-        self.formLayoutWidget_2.setGeometry(QtCore.QRect(610, 80, 621, 431))
+        self.formLayoutWidget_2.setGeometry(QtCore.QRect(300, 60, 600, 200))
         self.formLayoutWidget_2.setObjectName("formLayoutWidget_2")
         self.formLayout_2 = QtWidgets.QFormLayout(self.formLayoutWidget_2)
         self.formLayout_2.setContentsMargins(50, 0, 0, 0)
@@ -360,7 +359,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.formLayout_2.setWidget(8, QtWidgets.QFormLayout.FieldRole, self.time_lock_delta_label)
 
         self.formLayoutWidget_3 = QtWidgets.QWidget(self)
-        self.formLayoutWidget_3.setGeometry(QtCore.QRect(1300, 80, 600, 431))
+        self.formLayoutWidget_3.setGeometry(QtCore.QRect(700, 60, 900, 200))
         self.formLayoutWidget_3.setObjectName("formLayoutWidget_3")
         self.formLayout_3 = QtWidgets.QFormLayout(self.formLayoutWidget_3)
         self.formLayout_3.setContentsMargins(0, 0, 0, 0)
@@ -399,7 +398,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.formLayout_3.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.date_label)
 
         self.formLayoutWidget_4 = QtWidgets.QWidget(self)
-        self.formLayoutWidget_4.setGeometry(QtCore.QRect(0, 500, 1500, 150))
+        self.formLayoutWidget_4.setGeometry(QtCore.QRect(0, 280, 900, 150))
         self.formLayoutWidget_4.setObjectName("formLayoutWidget_3")
         self.formLayout_4 = QtWidgets.QFormLayout(self.formLayoutWidget_4)
         self.formLayout_4.setContentsMargins(50, 0, 0, 0)
@@ -434,19 +433,19 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.formLayout_4.setWidget(2, QtWidgets.QFormLayout.FieldRole, self.uri_label)
 
         self.reconnect_push_button = QtWidgets.QPushButton(self)
-        self.reconnect_push_button.setGeometry(QtCore.QRect(900, 690, 250, 48))
+        self.reconnect_push_button.setGeometry(QtCore.QRect(600, 380, 150, 30))
         self.reconnect_push_button.setObjectName("reconnect_push_button")
         self.reconnect_push_button.setText("Reconnect")
         self.reconnect_push_button.clicked.connect(self.reconnect_channel)
 
         self.close_channel_push_button = QtWidgets.QPushButton(self)
-        self.close_channel_push_button.setGeometry(QtCore.QRect(50, 690, 250, 48))
+        self.close_channel_push_button.setGeometry(QtCore.QRect(50, 380, 150, 30))
         self.close_channel_push_button.setObjectName("close_channel_push_button")
         self.close_channel_push_button.setText("Close Channel")
         self.close_channel_push_button.clicked.connect(self.close_channel)
 
         self.channel_policy_push_button = QtWidgets.QPushButton(self)
-        self.channel_policy_push_button.setGeometry(QtCore.QRect(450, 690, 300, 48))
+        self.channel_policy_push_button.setGeometry(QtCore.QRect(300, 380, 200, 30))
         self.channel_policy_push_button.setObjectName("channel_policy_push_button")
         self.channel_policy_push_button.setText("Set Channel Policy")
         self.channel_policy_push_button.clicked.connect(self.set_channel_policy)
@@ -593,7 +592,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
                                                              base_fee_msat=self.base_fee_msat,
                                                              fee_rate=self.fee_rate,
                                                              time_lock_delta=self.time_lock_delta)
-        self.update(self.channel_id, cold_update=True)
+            self.update(self.channel_id, cold_update=True)
 
     def open_block_explorer(self, linkStr):
         channel = lightning_channel.Channels.channel_index[self.channel_id][0]
