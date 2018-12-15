@@ -31,6 +31,7 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 # TODO 3: Add channel policy update window - global, node, based on ratio local and remote balance
 # TODO 4: Add overview of inactive channels - toggle between node colours and green (active) red (inactive) nodes
 # TODO 5: Add auto refresh every hour
+# TODO 6: Add auto close after certain period of inactivity
 
 
 class MainWindow(QtWidgets.QMainWindow):

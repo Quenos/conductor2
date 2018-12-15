@@ -15,7 +15,7 @@
 
 import ipaddress
 from lightning import lndAL
-from config.config import SystemConfiguration
+import re
 
 
 class Node(object):
@@ -67,12 +67,14 @@ class Node(object):
                     raise ex
         elif alias:
             response = lndAL.LndAL.describe_graph()
+            ret_val = []
             for node in response.nodes:
-                if node.alias == alias:
+                search_result = re.search(alias, node.alias, re.IGNORECASE)
+                if search_result is not None:
                     # the recursion is used because describe graph doesn't return the number of channels
                     # and the total capacity. So once the pub_key is known, the function is now called
                     # with the pub key as search parameter
-                    ret_val = Node.find_node(node.pub_key)
+                    ret_val.append({'pub_key': node.pub_key, 'alias': node.alias})
         return ret_val
 
 

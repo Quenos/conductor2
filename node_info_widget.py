@@ -17,10 +17,9 @@ from datetime import datetime
 from PyQt5 import QtCore, QtGui, QtWidgets
 from lightning.lightning_node import Node
 from lightning.lightning_channel import Channels
-from lightning.fwding_event import FwdingEvents
 from stylesheets.dark_theme import DarkTheme
 from config.config import SystemConfiguration
-
+from found_nodes_widget import FoundNodesWidget
 
 class NodeInfoWidget(QtWidgets.QDialog):
     class Amount(QtWidgets.QDialog):
@@ -92,6 +91,7 @@ class NodeInfoWidget(QtWidgets.QDialog):
         super().__init__()
 
         self.node = None
+        self.found_nodes_widget = None
         self.setObjectName("Form")
         # self.resize(1457, 700)
         self.formLayoutWidget_2 = None
@@ -205,14 +205,27 @@ class NodeInfoWidget(QtWidgets.QDialog):
             self.last_update_label.setText("")
             self.node_alias.setText("")
 
+    def update_from_pub_key(self, pub_key):
+        self.node = Node.find_node(pub_key=pub_key)
+        self.update()
+
     def find_node(self, event):
         if self.public_key_edit.text():
-            self.node = Node.find_node(self.public_key_edit.text())
+            self.node = Node.find_node(pub_key=self.public_key_edit.text())
         elif self.node_alias_edit.text():
-            self.node = Node.find_node(alias=self.node_alias_edit.text())
-        self.update()
-        if not self.node:
-            self.node_alias.setText('Node not found')
+            node_list = Node.find_node(alias=self.node_alias_edit.text())
+            if len(node_list) < 1:
+                self.node_alias.setText('Node not found')
+                self.update()
+                if not self.node:
+                    self.node_alias.setText('Node not found')
+            elif len(node_list) < 2:
+                self.node = Node.find_node(pub_key=node_list[0]['pub_key'])
+                self.update()
+                if not self.node:
+                    self.node_alias.setText('Node not found')
+            elif len(node_list) >= 2:
+                self.found_nodes_widget = FoundNodesWidget(node_list, self.update_from_pub_key)
 
     def add_search_widget(self):
         self.formLayoutWidget_2 = QtWidgets.QWidget(self)
