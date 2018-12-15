@@ -19,7 +19,7 @@ from balance_info_widget import BalanceInfoWidget
 from channel_graph_widget import ChannelGraphWidget
 from channel_info_widget import ChannelInfoWidget
 from settings_widget import SettingsDialog
-from pending_channels_widget import PendingChannelWidget
+from pending_channel_container_widget import PendingChannelContainerWidget
 from node_info_widget import NodeInfoWidget
 from stylesheets.dark_theme import DarkTheme
 from config.config import SystemConfiguration
@@ -100,7 +100,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dockPendingChannelsWidget = QtWidgets.QDockWidget("Pending Channels", self)
         self.dockPendingChannelsWidget.setMinimumSize(QtCore.QSize(800, 400))
         self.dockPendingChannelsWidget.setObjectName("dockPendingChannelsWidget")
-        self.dockPendingChannelsWidget.setWidget(PendingChannelWidget())
+        self.dockPendingChannelsWidget.setWidget(PendingChannelContainerWidget())
         self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.RightDockWidgetArea), self.dockPendingChannelsWidget)
 
         self.dockInfoWidget = QtWidgets.QDockWidget("Lightning Channel Info", self)
@@ -139,6 +139,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_channel(self):
         self.dockNodeInfoWidget.show()
+
+    @staticmethod
+    def open_block_explorer(link_str):
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl(link_str))
 
 
 if __name__ == "__main__":
