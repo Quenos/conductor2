@@ -33,9 +33,9 @@ class AutoPolicy(object):
 
     def update(self):
         sc = SystemConfiguration()
+        sc.channel_info_update_needed = True
         for c in lightning_channel.Channels.channel_index:
             channel = lightning_channel.Channels.channel_index[c][0]
-            x = channel.remote_pubkey
             if channel.channel_type == "open_channel":
                 if channel.remote_balance == 0:
                     balance_ratio = 100000.0

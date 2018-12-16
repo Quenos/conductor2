@@ -226,14 +226,14 @@ class TextInstruction(Instruction):
 
 
 class ChannelGraphPicture(object):
-    _instructions = []
+    instructions = []
 
     @staticmethod
     def reset():
-        for instruction in ChannelGraphPicture._instructions:
+        for instruction in ChannelGraphPicture.instructions:
             instruction.reset()
         Node.reset()
-        ChannelGraphPicture._instructions = []
+        ChannelGraphPicture.instructions = []
 
 
 class Node(object):

@@ -505,10 +505,16 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         # in order for the channel list to access this object
         # to update info
 
-    def update(self, channel_id, cold_update=False):
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(lambda: self.update(self.channel_id))
+        self.timer.start(1000 * 60 * 5)  # update once 5 minutes
+
+    def update(self, channel_id):
+        sc = SystemConfiguration()
         self.channel_id = channel_id
-        if cold_update:
+        if sc.channel_info_update_needed:
             lightning_channel.Channels.read_channels()
+            sc.channel_info_update_needed = False
 
         self.forwarding_events = FwdingEvents()
         channel = lightning_channel.Channels.channel_index[channel_id][0]
@@ -563,7 +569,9 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         try:
             channel = lightning_channel.Channels.channel_index[self.channel_id][0]
             channel.reconnect()
-            self.update(self.channel_id, cold_update=True)
+            sc = SystemConfiguration()
+            sc.channel_info_update_needed = True
+            self.update(self.channel_id)
             if self.active_label.text() == 'INACTIVE':
                 mb = QtWidgets.QMessageBox()
                 mb.about(self, "Reconnect error", "Unable to reconnect with node. Try again later")
@@ -596,4 +604,6 @@ class ChannelInfoWidget(QtWidgets.QWidget):
                                                              base_fee_msat=self.base_fee_msat,
                                                              fee_rate=self.fee_rate,
                                                              time_lock_delta=self.time_lock_delta)
-            self.update(self.channel_id, cold_update=True)
+            sc = SystemConfiguration()
+            sc.channel_info_update_needed = True
+            self.update(self.channel_id)

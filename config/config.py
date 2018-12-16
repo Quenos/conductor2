@@ -43,6 +43,8 @@ class SystemConfiguration(object, metaclass=Singleton):
         self._policy2 = None
         self._policy3 = None
 
+        self._channel_info_update_needed = False
+
     @property
     def admin_macaroon_directory(self):
         return self._admin_macaroon_directory
@@ -130,6 +132,14 @@ class SystemConfiguration(object, metaclass=Singleton):
     @policy3.setter
     def policy3(self, value):
         self._policy3 = value
+
+    @property
+    def channel_info_update_needed(self):
+        return self._channel_info_update_needed
+
+    @channel_info_update_needed.setter
+    def channel_info_update_needed(self, value):
+        self._channel_info_update_needed = value
 
     def read_config(self):
         if not os.path.isfile('./config/conductor.conf'):

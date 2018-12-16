@@ -14,6 +14,7 @@
 #
 
 from PyQt5 import QtCore, QtWidgets, QtGui
+from config.config import SystemConfiguration
 from instruction import CenterNode, CenterNodeInstruction, ChannelGraphPicture, Node, NodeInstruction
 from lightning import lightning_node, lightning_channel
 
@@ -50,7 +51,7 @@ class ChannelGraphWidget(QtWidgets.QWidget):
         pen = QtGui.QPen(colour, self.pen_width)
 
         instruction = CenterNodeInstruction(center_node, pen)
-        ChannelGraphPicture._instructions.append(instruction)
+        ChannelGraphPicture.instructions.append(instruction)
 
         # draw the nodes and channels connect to the center node
         for c in lightning_channel.Channels.channel_index:
@@ -61,22 +62,26 @@ class ChannelGraphWidget(QtWidgets.QWidget):
                 pen = QtGui.QPen(colour, self.pen_width)
                 node = Node(channel.remote_node_alias)
                 instruction = NodeInstruction(node, pen, channel.chan_id)
-                ChannelGraphPicture._instructions.append(instruction)
-        if ChannelGraphPicture._instructions[1]:
-            self.channel_info_widget.update(ChannelGraphPicture._instructions[1].chan_id)
+                ChannelGraphPicture.instructions.append(instruction)
+        if ChannelGraphPicture.instructions[1]:
+            self.channel_info_widget.update(ChannelGraphPicture.instructions[1].chan_id)
         self._stop_repaint = False
 
     def paintEvent(self, event):
         qp = QtGui.QPainter(self)
-        for instruction in ChannelGraphPicture._instructions:
+        for instruction in ChannelGraphPicture.instructions:
             instruction.paint(self, qp)
 
     def mousePressEvent(self, event):
-        for i in ChannelGraphPicture._instructions:
+        sc = SystemConfiguration()
+        temp_update_needed = sc.channel_info_update_needed
+        sc.channel_info_update_needed = False
+        for i in ChannelGraphPicture.instructions:
             if isinstance(i, NodeInstruction):
                 try:
                     if i.get_window_position().contains(event.pos()):
                         self.channel_info_widget.update(i.chan_id)
                         break
                 except AttributeError:
-                    pass
+                    sc.channel_info_update_needed = temp_update_needed
+        sc.channel_info_update_needed = temp_update_needed
