@@ -33,10 +33,15 @@ class SystemConfiguration(object, metaclass=Singleton):
         self._tls_cert_directory = ''
         self._lnd_rpc_address = ''
         self._lnd_rpc_port = ''
+
         self._default_sat_per_byte = 0
         self._default_time_lock_delta = 144
         self._default_base_fee_msat = 1000
         self._default_fee_rate = 0.000001
+
+        self._policy1 = None
+        self._policy2 = None
+        self._policy3 = None
 
     @property
     def admin_macaroon_directory(self):
@@ -102,6 +107,30 @@ class SystemConfiguration(object, metaclass=Singleton):
     def default_fee_rate(self, value):
         self._default_fee_rate = value
 
+    @property
+    def policy1(self):
+        return self._policy1
+
+    @policy1.setter
+    def policy1(self, value):
+        self._policy1 = value
+
+    @property
+    def policy2(self):
+        return self._policy2
+
+    @policy2.setter
+    def policy2(self, value):
+        self._policy2 = value
+
+    @property
+    def policy3(self):
+        return self._policy3
+
+    @policy3.setter
+    def policy3(self, value):
+        self._policy3 = value
+
     def read_config(self):
         if not os.path.isfile('./config/conductor.conf'):
             raise FileNotFoundError
@@ -111,21 +140,53 @@ class SystemConfiguration(object, metaclass=Singleton):
         self._tls_cert_directory = config['DIRECTORIES']['tls_cert']
         self._lnd_rpc_address = config['ADDRESSES']['lnd_rpc_address']
         self._lnd_rpc_port = config['ADDRESSES']['lnd_rpc_port']
+
         self._default_sat_per_byte = config['SETTINGS']['default_sat_per_byte']
         self._default_base_fee_msat = config['SETTINGS']['default_base_fee_msat']
         self._default_fee_rate = config['SETTINGS']['default_fee_rate']
         self._default_time_lock_delta = config['SETTINGS']['default_time_lock_delta']
 
+        policy1_perc = config['POLICY']['policy1_perc']
+        policy1_base_fee = config['POLICY']['policy1_base_fee']
+        policy1_fee_rate = config['POLICY']['policy1_fee_rate']
+
+        self._policy1 = {'perc': policy1_perc, 'base_fee': policy1_base_fee, 'fee_rate': policy1_fee_rate}
+
+        policy2_perc = config['POLICY']['policy2_perc']
+        policy2_base_fee = config['POLICY']['policy2_base_fee']
+        policy2_fee_rate = config['POLICY']['policy2_fee_rate']
+
+        self._policy2 = {'perc': policy2_perc, 'base_fee': policy2_base_fee, 'fee_rate': policy2_fee_rate}
+
+        policy3_perc = config['POLICY']['policy3_perc']
+        policy3_base_fee = config['POLICY']['policy3_base_fee']
+        policy3_fee_rate = config['POLICY']['policy3_fee_rate']
+
+        self._policy3 = {'perc': policy3_perc, 'base_fee': policy3_base_fee, 'fee_rate': policy3_fee_rate}
+
     def write_config(self):
         config = configparser.ConfigParser()
         config['DIRECTORIES'] = {'admin_macaroon': self._admin_macaroon_directory,
                                  'tls_cert': self._tls_cert_directory}
+
         config['ADDRESSES'] = {'lnd_rpc_address': self._lnd_rpc_address,
                                'lnd_rpc_port': self._lnd_rpc_port}
+
         config['SETTINGS'] = {'default_sat_per_byte': self._default_sat_per_byte,
                               'default_base_fee_msat': self._default_base_fee_msat,
                               'default_fee_rate': self._default_fee_rate,
                               'default_time_lock_delta': self._default_time_lock_delta}
+
+        config['POLICY'] = {'policy1_perc': self._policy1['perc'],
+                            'policy1_base_fee': self._policy1['base_fee'],
+                            'policy1_fee_rate': self._policy2['fee_rate'],
+                            'policy2_perc': self._policy2['perc'],
+                            'policy2_base_fee': self._policy2['base_fee'],
+                            'policy2_fee_rate': self._policy2['fee_rate'],
+                            'policy3_perc': self._policy3['perc'],
+                            'policy3_base_fee': self._policy3['base_fee'],
+                            'policy3_fee_rate': self._policy3['fee_rate'],
+                            }
 
         with open('./config/conductor.conf', 'w') as configfile:
             config.write(configfile)

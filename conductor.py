@@ -23,7 +23,8 @@ from pending_channel_container_widget import PendingChannelContainerWidget
 from node_info_widget import NodeInfoWidget
 from stylesheets.dark_theme import DarkTheme
 from config.config import SystemConfiguration
-from lightning import test_lnd_connection, lightning_channel
+from lightning import test_lnd_connection
+from auto_policy import AutoPolicy
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
@@ -120,7 +121,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dockBalanceWidget.setWidget(BalanceInfoWidget())
         self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.TopDockWidgetArea), self.dockBalanceWidget)
 
-        self.scheduler = None
+        self.auto_policy = AutoPolicy()
+
         # because the containing view for ChannelInfoWidget did not exist on time of creation
         # of the object, the object can not show itself
         self.channelInfoWidget.show()
