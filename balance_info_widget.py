@@ -193,3 +193,4 @@ class BalanceInfoWidget(QtWidgets.QWidget):
             self.ratio_label.setStyleSheet("QLabel { background-color : #aa8000; }")
         else:
             self.ratio_label.setStyleSheet("QLabel { background-color : #33aa33; }")
+        self.ratio_label.setText(str(ratio))

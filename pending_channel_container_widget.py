@@ -17,6 +17,7 @@ from abc import abstractmethod
 from PyQt5 import QtCore, QtGui, QtWidgets
 from lightning.pending_channels import PendingChannels
 from lightning.lightning_channel import Channel
+from config.config import SystemConfiguration
 from utils.block_explorer import open_block_explorer
 
 
@@ -47,6 +48,9 @@ class PendingChannelBaseWidget(QtWidgets.QWidget):
     @abstractmethod
     def update(self, pending_channels):
         self._pending_channels = pending_channels
+        if self._pending_channels is not None:
+            if self._number_pending_channels != len(self._pending_channels):
+                SystemConfiguration().channel_info_update_needed = True
 
     def hide_buttons(self):
         self.prev_button.hide()
