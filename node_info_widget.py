@@ -21,6 +21,7 @@ from stylesheets.dark_theme import DarkTheme
 from config.config import SystemConfiguration
 from found_nodes_widget import FoundNodesWidget
 
+
 class NodeInfoWidget(QtWidgets.QDialog):
     class Amount(QtWidgets.QDialog):
         def __init__(self, parent):
@@ -36,21 +37,27 @@ class NodeInfoWidget(QtWidgets.QDialog):
             self.formLayout = QtWidgets.QFormLayout(self.formLayoutWidget)
             self.formLayout.setContentsMargins(0, 0, 0, 0)
             self.formLayout.setObjectName("formLayout")
+
             self.label = QtWidgets.QLabel(self.formLayoutWidget)
             self.label.setObjectName("label")
             self.formLayout.setWidget(0, QtWidgets.QFormLayout.LabelRole, self.label)
-            self.amount_edit = QtWidgets.QLineEdit(self.formLayoutWidget)
+
+            self.amount_edit = QtWidgets.QDoubleSpinBox(self.formLayoutWidget)
+            self.amount_edit.setMinimum(0)
+            self.amount_edit.setMaximum(1600000)
+            self.amount_edit.setDecimals(0)
             self.amount_edit.setObjectName("amount_edit")
-            self.amount_edit.setInputMask('00000000')
             self.formLayout.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.amount_edit)
 
             self.label_2 = QtWidgets.QLabel(self.formLayoutWidget)
             self.label_2.setObjectName('sat_per_byte_label')
             self.formLayout.setWidget(1, QtWidgets.QFormLayout.LabelRole, self.label_2)
 
-            self.sat_per_byte_edit = QtWidgets.QLineEdit(self.formLayoutWidget)
+            self.sat_per_byte_edit = QtWidgets.QDoubleSpinBox(self.formLayoutWidget)
+            self.sat_per_byte_edit.setMinimum(0)
+            self.sat_per_byte_edit.setMaximum(1000)
+            self.sat_per_byte_edit.setDecimals(0)
             self.sat_per_byte_edit.setObjectName('sat_per_byte_edit')
-            self.sat_per_byte_edit.setInputMask('0000')
             self.formLayout.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.sat_per_byte_edit)
 
             self.buttonBox = QtWidgets.QDialogButtonBox(self)
@@ -64,14 +71,14 @@ class NodeInfoWidget(QtWidgets.QDialog):
             self.label.setText('Amount to allocate to channel:')
             self.label_2.setText('Commit fee in sat/byte:')
             sc = SystemConfiguration()
-            self.sat_per_byte_edit.setText(sc.default_sat_per_byte)
+            self.sat_per_byte_edit.setValue(int(sc.default_sat_per_byte))
 
             self.buttonBox.accepted.connect(self.accept)
             self.buttonBox.rejected.connect(self.reject)
 
         def accept(self):
-            self.parent.amount_allocate = int(self.amount_edit.text())
-            self.parent.sat_per_byte = int(self.sat_per_byte_edit.text())
+            self.parent.amount_allocate = int(self.amount_edit.value())
+            self.parent.sat_per_byte = int(self.sat_per_byte_edit.value())
             if self.parent.sat_per_byte > 20:
                 mb_reply = QtWidgets.QMessageBox.question(self,
                                                           'Are you sure?', "Do you really want to pay "
