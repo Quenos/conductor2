@@ -53,8 +53,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.settings()
             exit(-1)
 
-        lightning_channel.Channels().read_channels()
-
         self.settings_dialog = None
         self.node_info_dialog = None
 

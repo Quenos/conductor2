@@ -18,6 +18,7 @@ from lightning import lightning_channel
 from PyQt5 import QtCore, QtWidgets, QtGui
 from stylesheets.dark_theme import DarkTheme
 from lightning.fwding_event import FwdingEvents
+from utils.block_explorer import open_block_explorer
 from config.config import SystemConfiguration
 
 
@@ -419,7 +420,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.channel_point_label = QtWidgets.QLabel(self.formLayoutWidget_4)
         self.channel_point_label.setObjectName("channel_point_label")
         # self.channel_point_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        self.channel_point_label.linkActivated.connect(self.open_block_explorer)
+        self.channel_point_label.linkActivated.connect(open_block_explorer)
         self.formLayout_4.setWidget(1, QtWidgets.QFormLayout.FieldRole, self.channel_point_label)
 
         self.remote_pubkey_label = QtWidgets.QLabel(self.formLayoutWidget_4)
@@ -508,6 +509,8 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.channel_id = channel_id
         if cold_update:
             lightning_channel.Channels.read_channels()
+
+        self.forwarding_events = FwdingEvents()
         channel = lightning_channel.Channels.channel_index[channel_id][0]
         if channel.channel_state == lightning_channel.Channel.ChannelState.ACTIVE:
             self.reconnect_push_button.hide()
@@ -518,8 +521,9 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.remote_pubkey_label.setText(channel.remote_pubkey)
 
         cp = lightning_channel.Channel.channel_point_str(channel.channel_point)
-        self.channel_point_label.setText(
-            '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/">' + cp + '</a>')
+        link = '<style> a {color:#3daee9;}</style><a href="https://blockstream.info/tx/' + cp.split(':')[0] \
+               + '">' + cp + '</a>'
+        self.channel_point_label.setText(link)
         self.channel_id_label.setText(str(channel.chan_id))
         self.capacity_label.setText(str(channel.capacity))
         self.local_balance_label.setText(str(channel.local_balance))
@@ -593,9 +597,3 @@ class ChannelInfoWidget(QtWidgets.QWidget):
                                                              fee_rate=self.fee_rate,
                                                              time_lock_delta=self.time_lock_delta)
             self.update(self.channel_id, cold_update=True)
-
-    def open_block_explorer(self, linkStr):
-        channel = lightning_channel.Channels.channel_index[self.channel_id][0]
-        cp = lightning_channel.Channel.channel_point_str(channel.channel_point).split(':')[0]
-        url = 'https://blockstream.info/tx/' + cp
-        QtGui.QDesktopServices.openUrl(QtCore.QUrl(url))

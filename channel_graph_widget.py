@@ -35,6 +35,7 @@ class ChannelGraphWidget(QtWidgets.QWidget):
 
     def update(self):
         ChannelGraphPicture.reset()
+        ChannelGraphWidget.channels.read_channels()
         self._stop_repaint = True
         # draw center node (HomeNode - your node)
         home_node = None
