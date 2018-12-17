@@ -16,9 +16,9 @@
 from abc import abstractmethod
 from PyQt5 import QtCore, QtGui, QtWidgets
 from lightning.pending_channels import PendingChannels
-from lightning.lightning_channel import Channel
-from config.config import SystemConfiguration
+from lightning.lightning_channel import Channel, Channels
 from utils.block_explorer import open_block_explorer
+from scheduler.update_scheduler import UpdateScheduler
 
 
 class PendingChannelBaseWidget(QtWidgets.QWidget):
@@ -50,7 +50,10 @@ class PendingChannelBaseWidget(QtWidgets.QWidget):
         self._pending_channels = pending_channels
         if self._pending_channels is not None:
             if self._number_pending_channels != len(self._pending_channels):
-                SystemConfiguration().channel_info_update_needed = True
+                Channels.read_channels()
+                UpdateScheduler.trigger('balance_info_widget')
+                UpdateScheduler.trigger('channel_graph_widget')
+                UpdateScheduler.trigger('channel_info_widget')
 
     def hide_buttons(self):
         self.prev_button.hide()
@@ -855,11 +858,9 @@ class PendingChannelContainerWidget(QtWidgets.QWidget):
 
         self.tabWidget.currentChanged.connect(self._tab_changed)
 
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.update)
-        self.timer.start(30000)
-
-        self.update()
+        # start a periodic update of the pending channel container widget every 30 seconds
+        # and run it once from the start
+        UpdateScheduler.register('pending_channel_container_widget', self.update, interval=30 * 1000, immediate=True)
 
     def _tab_changed(self, index):
         # hide the buttons of the previous active tab, so that these buttons do not interfere with the buttons of

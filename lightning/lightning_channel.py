@@ -15,7 +15,7 @@
 
 
 import ipaddress
-from config.config import SystemConfiguration
+from utils.block_explorer import get_block_data
 from lightning import lndAL
 from lightning.fee_report import FeeReport
 from lightning.routing_policy import RoutingPolicy
@@ -105,6 +105,14 @@ class Channel(BaseChannel):
 
     def update_channel(self, channel):
         self.chan_id = channel.chan_id
+
+    @property
+    def creation_date(self):
+        channel_id_bytes = hex(self.chan_id)[2:]
+        while len(channel_id_bytes) < 16:
+            channel_id_bytes = '0' + channel_id_bytes
+        data = get_block_data(int(channel_id_bytes[:6], 16))
+        return data['timestamp']
 
     def __eq__(self, other):
         return self.chan_id == other.chan_id
@@ -223,6 +231,11 @@ class PendingChannel(BaseChannel):
 
 
 class Channels(object):
+    class ReadMode(Enum):
+        OPEN_ONLY = 0
+        CLOSED_ONLY = 1
+        BOTH = 3
+
     # TODO: make channel_index better iterable
     channel_index = defaultdict(list)
     large_local_amt = 400000
@@ -235,15 +248,17 @@ class Channels(object):
         Channels.channel_index[c.chan_id].append(c)
 
     @staticmethod
-    def read_channels():
+    def read_channels(mode=ReadMode.OPEN_ONLY):
         # read channels: Empties the existing channels list,
         #                reads the open and closed channels
         #                re-creates the channel list with the current state
         #                Also the routing policy is cleared
         RoutingPolicy.clear_graph()
         Channels.channel_index = defaultdict(list)
-        Channels._read_open_channels()
-        Channels._read_closed_channels()
+        if mode == Channels.ReadMode.OPEN_ONLY or mode == Channels.ReadMode.BOTH:
+            Channels._read_open_channels()
+        if mode == Channels.ReadMode.CLOSED_ONLY or mode == Channels.ReadMode.BOTH:
+            Channels._read_closed_channels()
 
     @staticmethod
     def _read_open_channels():

@@ -222,10 +222,9 @@ class NodeInfoWidget(QtWidgets.QDialog):
         elif self.node_alias_edit.text():
             node_list = Node.find_node(alias=self.node_alias_edit.text())
             if len(node_list) < 1:
-                self.node_alias.setText('Node not found')
+                self.node = None
                 self.update()
-                if not self.node:
-                    self.node_alias.setText('Node not found')
+                self.node_alias.setText('Node not found')
             elif len(node_list) < 2:
                 self.node = Node.find_node(pub_key=node_list[0]['pub_key'])
                 self.update()

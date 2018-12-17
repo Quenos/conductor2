@@ -14,6 +14,7 @@
 #
 
 from lightning import wallet_balance, channel_balance, pending_channels, lightning_channel
+from scheduler.update_scheduler import UpdateScheduler
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 
@@ -162,10 +163,8 @@ class BalanceInfoWidget(QtWidgets.QWidget):
         self.ratio_label.setText(str(ratio))
         self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.ratio_label)
 
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.update)
-        self.timer.start(30000)
-
+        # register the balance info widget update function, don't start a timer, but run it once
+        UpdateScheduler.register('balance_info_widget', self.update, start=False, immediate=True)
         self.show()
 
     def update(self):

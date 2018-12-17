@@ -14,10 +14,12 @@
 #
 
 from datetime import date
+import urllib.error
 from lightning import lightning_channel
 from PyQt5 import QtCore, QtWidgets, QtGui
 from stylesheets.dark_theme import DarkTheme
 from lightning.fwding_event import FwdingEvents
+from scheduler.update_scheduler import UpdateScheduler
 from utils.block_explorer import open_block_explorer
 from config.config import SystemConfiguration
 
@@ -156,7 +158,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
             self.parent.fee_rate = -1
             self.hide()
 
-    def __init__(self, channel_id=0):
+    def __init__(self):
         super().__init__()
 
         sc = SystemConfiguration()
@@ -170,7 +172,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.fee_rate = sc.default_fee_rate
         self.time_lock_delta = sc.default_time_lock_delta
 
-        self.channel_id = channel_id
+        # self.channel_id = channel_id
         self.channel_name_label = QtWidgets.QLabel(self)
         self.channel_name_label.setGeometry(QtCore.QRect(200, 0, 700, 60))
         font = QtGui.QFont()
@@ -398,6 +400,14 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.date_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self.formLayout_3.setWidget(3, QtWidgets.QFormLayout.FieldRole, self.date_label)
 
+        self.label_304 = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.label_304.setObjectName("label_304")
+        self.formLayout_3.setWidget(4, QtWidgets.QFormLayout.LabelRole, self.label_304)
+        self.date_created_label = QtWidgets.QLabel(self.formLayoutWidget_3)
+        self.date_created_label.setObjectName("date_created_label")
+        self.date_created_label.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.formLayout_3.setWidget(4, QtWidgets.QFormLayout.FieldRole, self.date_created_label)
+
         self.formLayoutWidget_4 = QtWidgets.QWidget(self)
         self.formLayoutWidget_4.setGeometry(QtCore.QRect(0, 280, 900, 150))
         self.formLayoutWidget_4.setObjectName("formLayoutWidget_3")
@@ -498,26 +508,26 @@ class ChannelInfoWidget(QtWidgets.QWidget):
         self.label_301.setText('Total forwarded amount out:')
         self.label_302.setText('Total fees received:')
         self.label_303.setText('Date last forward (UTC):')
+        self.label_304.setText('Date channel creation:')
 
-        if self.channel_id != 0:
-            self.update(channel_id)
-        # don't show the object yet, because it is forward created
-        # in order for the channel list to access this object
-        # to update info
+        for c in lightning_channel.Channels.channel_index:
+            self.update(channel_id=c)
+            break
 
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(lambda: self.update(self.channel_id))
-        self.timer.start(1000 * 60 * 5)  # update once 5 minutes
+        self.show()
 
-    def update(self, channel_id):
-        sc = SystemConfiguration()
-        self.channel_id = channel_id
-        if sc.channel_info_update_needed:
-            lightning_channel.Channels.read_channels()
-            sc.channel_info_update_needed = False
+        # register the channel info widget update function, but don't start an automatic update
+        UpdateScheduler.register('channel_info_widget', self.update, start=False, immediate=False)
+
+    def update(self, channel_id=None):
+        if channel_id is not None:
+            self.channel_id = channel_id
+
+        if self.channel_id is None:
+            return
 
         self.forwarding_events = FwdingEvents()
-        channel = lightning_channel.Channels.channel_index[channel_id][0]
+        channel = lightning_channel.Channels.channel_index[self.channel_id][0]
         if channel.channel_state == lightning_channel.Channel.ChannelState.ACTIVE:
             self.reconnect_push_button.hide()
         else:
@@ -564,14 +574,20 @@ class ChannelInfoWidget(QtWidgets.QWidget):
             self.date_label.setText(str(date.fromtimestamp(last_forward)))
         else:
             self.date_label.setText('---')
+        try:
+            self.date_created_label.setText(str(date.fromtimestamp(channel.creation_date)))
+        except urllib.error.URLError:
+            self.date_created_label.setText('Unable to determine')
+
 
     def reconnect_channel(self, event):
         try:
             channel = lightning_channel.Channels.channel_index[self.channel_id][0]
             channel.reconnect()
-            sc = SystemConfiguration()
-            sc.channel_info_update_needed = True
-            self.update(self.channel_id)
+
+            lightning_channel.Channels.read_channels()
+            UpdateScheduler.trigger('channel_info_widget', self.channel_id)
+
             if self.active_label.text() == 'INACTIVE':
                 mb = QtWidgets.QMessageBox()
                 mb.about(self, "Reconnect error", "Unable to reconnect with node. Try again later")
@@ -604,6 +620,6 @@ class ChannelInfoWidget(QtWidgets.QWidget):
                                                              base_fee_msat=self.base_fee_msat,
                                                              fee_rate=self.fee_rate,
                                                              time_lock_delta=self.time_lock_delta)
-            sc = SystemConfiguration()
-            sc.channel_info_update_needed = True
-            self.update(self.channel_id)
+
+            lightning_channel.Channels.read_channels()
+            UpdateScheduler.trigger('channel_info_widget', self.channel_id)

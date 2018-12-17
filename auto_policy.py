@@ -13,7 +13,8 @@
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-from PyQt5 import QtCore
+from datetime import datetime
+from scheduler.update_scheduler import UpdateScheduler
 from config.config import SystemConfiguration
 from lightning import lightning_channel
 
@@ -25,15 +26,17 @@ class AutoPolicy(object):
         self.policy2 = sc.policy2
         self.policy3 = sc.policy3
 
-        self.update()
-
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.update)
-        self.timer.start(1000 * 60 * 60)  # update once every hour
+        # register the auto policy update function, run it evey 2 hours if auto_policy flag is True in config
+        st = sc.auto_policy
+        UpdateScheduler.register('auto_policy',
+                                 self.update,
+                                 interval=2 * 60 * 60 * 1000,
+                                 start=sc.auto_policy,
+                                 immediate=sc.auto_policy)
 
     def update(self):
+        print('auto_policy entry: ' + str(datetime.now()))
         sc = SystemConfiguration()
-        sc.channel_info_update_needed = True
         for c in lightning_channel.Channels.channel_index:
             channel = lightning_channel.Channels.channel_index[c][0]
             if channel.channel_type == "open_channel":
@@ -59,3 +62,5 @@ class AutoPolicy(object):
                         base_fee_msat=int(self.policy3['base_fee']),
                         fee_rate=float(self.policy3['fee_rate']),
                         time_lock_delta=int(sc.default_time_lock_delta))
+        UpdateScheduler.trigger('channel_info_widget')
+        print('auto_policy exit: ' + str(datetime.now()))

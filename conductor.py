@@ -23,7 +23,7 @@ from pending_channel_container_widget import PendingChannelContainerWidget
 from node_info_widget import NodeInfoWidget
 from stylesheets.dark_theme import DarkTheme
 from config.config import SystemConfiguration
-from lightning import test_lnd_connection
+from lightning import test_lnd_connection, lightning_channel
 from auto_policy import AutoPolicy
 
 from PyQt5 import QtCore, QtWidgets, QtGui
@@ -57,6 +57,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.settings_dialog = None
         self.node_info_dialog = None
 
+        # read the channels for this node, to be used by the other widgets
+        lightning_channel.Channels.read_channels()
+
         self.resize(50, 50)
         centralwidget = QtWidgets.QWidget(self)
         centralwidget.setObjectName("centralwidget")
@@ -87,14 +90,10 @@ class MainWindow(QtWidgets.QMainWindow):
         action_menu = menubar.addMenu('&Action')
         action_menu.addAction(open_channel_action)
 
-        # Channel List and Channel Graph need access to the ChannelInfoWidget to display info
-        # create the channel info widget to be used by the channel list and graph
-        self.channelInfoWidget = ChannelInfoWidget()
-
         self.dockGraphWidget = QtWidgets.QDockWidget("Lightning Channel Graph", self)
         self.dockGraphWidget.setMinimumSize(QtCore.QSize(1035, 440))
         self.dockGraphWidget.setObjectName("dockGraphWidget")
-        self.dockGraphWidget.setWidget(ChannelGraphWidget(self.channelInfoWidget))
+        self.dockGraphWidget.setWidget(ChannelGraphWidget())
         self.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.dockGraphWidget)
 
         self.dockPendingChannelsWidget = QtWidgets.QDockWidget("Pending Channels", self)
@@ -106,7 +105,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dockInfoWidget = QtWidgets.QDockWidget("Lightning Channel Info", self)
         self.dockInfoWidget.setMinimumSize(QtCore.QSize(800, 440))
         self.dockInfoWidget.setObjectName("dockInfoWidget")
-        self.dockInfoWidget.setWidget(self.channelInfoWidget)
+        self.dockInfoWidget.setWidget(ChannelInfoWidget())
         self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.LeftDockWidgetArea), self.dockInfoWidget)
 
         self.dockNodeInfoWidget = QtWidgets.QDockWidget("Node Info", self)
@@ -123,10 +122,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.auto_policy = AutoPolicy()
 
-        # because the containing view for ChannelInfoWidget did not exist on time of creation
-        # of the object, the object can not show itself
-        self.channelInfoWidget.show()
-
     def settings(self):
         self.settings_dialog = SettingsDialog()
         self.settings_dialog.setModal(True)
@@ -140,10 +135,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def open_channel(self):
         self.dockNodeInfoWidget.show()
-
-    @staticmethod
-    def open_block_explorer(link_str):
-        QtGui.QDesktopServices.openUrl(QtCore.QUrl(link_str))
 
 
 if __name__ == "__main__":

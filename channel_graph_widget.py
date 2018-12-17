@@ -14,29 +14,26 @@
 #
 
 from PyQt5 import QtCore, QtWidgets, QtGui
-from config.config import SystemConfiguration
 from instruction import CenterNode, CenterNodeInstruction, ChannelGraphPicture, Node, NodeInstruction
 from lightning import lightning_node, lightning_channel
+from scheduler.update_scheduler import UpdateScheduler
 
 
 class ChannelGraphWidget(QtWidgets.QWidget):
     channels = lightning_channel.Channels()
 
-    def __init__(self, channel_info_widget):
+    def __init__(self):
         super().__init__()
         self._stop_repaint = False
         self.pen_width = 2
-        self.channel_info_widget = channel_info_widget
-        self.update()
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.update)
-        self.timer.start(1000 * 60 * 60)  # update once every hour
+
+        # register the channel graph widget update function, but don't start an automatic update, but run it once
+        UpdateScheduler.register('channel_graph_widget', self.update, start=False, immediate=True)
 
         self.show()
 
     def update(self):
         ChannelGraphPicture.reset()
-        ChannelGraphWidget.channels.read_channels()
         self._stop_repaint = True
         # draw center node (HomeNode - your node)
         home_node = None
@@ -64,7 +61,7 @@ class ChannelGraphWidget(QtWidgets.QWidget):
                 instruction = NodeInstruction(node, pen, channel.chan_id)
                 ChannelGraphPicture.instructions.append(instruction)
         if ChannelGraphPicture.instructions[1]:
-            self.channel_info_widget.update(ChannelGraphPicture.instructions[1].chan_id)
+            UpdateScheduler.trigger('channel_info_widget', ChannelGraphPicture.instructions[1].chan_id)
         self._stop_repaint = False
 
     def paintEvent(self, event):
@@ -73,15 +70,11 @@ class ChannelGraphWidget(QtWidgets.QWidget):
             instruction.paint(self, qp)
 
     def mousePressEvent(self, event):
-        sc = SystemConfiguration()
-        temp_update_needed = sc.channel_info_update_needed
-        sc.channel_info_update_needed = False
         for i in ChannelGraphPicture.instructions:
             if isinstance(i, NodeInstruction):
                 try:
                     if i.get_window_position().contains(event.pos()):
-                        self.channel_info_widget.update(i.chan_id)
+                        UpdateScheduler.trigger('channel_info_widget', i.chan_id)
                         break
                 except AttributeError:
-                    sc.channel_info_update_needed = temp_update_needed
-        sc.channel_info_update_needed = temp_update_needed
+                    pass

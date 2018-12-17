@@ -12,17 +12,3 @@
 # OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
 # OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
-
-import json
-import urllib.request
-from PyQt5 import QtCore, QtGui, QtWidgets
-
-
-def get_block_data(block_height):
-    with urllib.request.urlopen('https://blockstream.info/api/blocks/' + str(block_height)) as url:
-        data = json.loads(url.read().decode())
-    return data[0]
-
-
-def open_block_explorer(link_str):
-    QtGui.QDesktopServices.openUrl(QtCore.QUrl(link_str))
