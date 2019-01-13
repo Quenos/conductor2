@@ -164,7 +164,7 @@ class BalanceInfoWidget(QtWidgets.QWidget):
         self.formLayout_5.setWidget(0, QtWidgets.QFormLayout.FieldRole, self.ratio_label)
 
         # register the balance info widget update function, don't start a timer, but run it once
-        UpdateScheduler.register('balance_info_widget', self.update, start=False, immediate=True)
+        UpdateScheduler.register('balance_info_widget', self.update, start=True, immediate=True)
         self.show()
 
     def update(self):

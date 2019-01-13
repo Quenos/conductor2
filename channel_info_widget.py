@@ -527,6 +527,7 @@ class ChannelInfoWidget(QtWidgets.QWidget):
             return
 
         self.forwarding_events = FwdingEvents()
+        x = self.forwarding_events.total_amt_forwarded()
         channel = lightning_channel.Channels.channel_index[self.channel_id][0]
         if channel.channel_state == lightning_channel.Channel.ChannelState.ACTIVE:
             self.reconnect_push_button.hide()
@@ -578,7 +579,6 @@ class ChannelInfoWidget(QtWidgets.QWidget):
             self.date_created_label.setText(str(date.fromtimestamp(channel.creation_date)))
         except urllib.error.URLError:
             self.date_created_label.setText('Unable to determine')
-
 
     def reconnect_channel(self, event):
         try:

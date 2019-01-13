@@ -57,3 +57,16 @@ class FwdingEvents(object):
                     and timestamp < forwarding_event.timestamp:
                 timestamp = forwarding_event.timestamp
         return timestamp
+
+    def total_amt_forwarded(self):
+        tot_amt_fwd = 0
+        for fwe in self.forwarding_events:
+            tot_amt_fwd += fwe.amt_in
+        return tot_amt_fwd
+
+    def total_fees_received(self):
+        tot_fees_received = 0
+        for fwe in self.forwarding_events:
+            tot_fees_received += fwe.amt_in
+            tot_fees_received -= fwe.amt_out
+        return tot_fees_received

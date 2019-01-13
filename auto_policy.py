@@ -62,5 +62,8 @@ class AutoPolicy(object):
                         base_fee_msat=int(self.policy3['base_fee']),
                         fee_rate=float(self.policy3['fee_rate']),
                         time_lock_delta=int(sc.default_time_lock_delta))
+
+        lightning_channel.Channels.read_channels()
         UpdateScheduler.trigger('channel_info_widget')
+
         print('auto_policy exit: ' + str(datetime.now()))

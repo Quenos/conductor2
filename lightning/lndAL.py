@@ -37,9 +37,19 @@ class LndAL(object):
         debug_error_string = "{"created":"@1543505526.607347974","description":"Error received from peer","file":"src/core/lib/surface/call.cc","file_line":1017,"grpc_message":"unknown service lnrpc.Lightning","grpc_status":12}"
 
         grpc._channel._Rendezvous: <_Rendezvous of RPC that terminated with:
-        status = StatusCode.UNAVAILABLE
-        details = "Connect Failed"
-        debug_error_string = "{"created":"@1543670679.735250331","description":"Failed to create subchannel","file":"src/core/ext/filters/client_channel/client_channel.cc","file_line":2721,"referenced_errors":[{"created":"@1543670679.735240549","description":"Pick Cancelled","file":"src/core/ext/filters/client_channel/lb_policy/pick_first/pick_first.cc","file_line":241,"referenced_errors":[{"created":"@1543670679.735022159","description":"Connect Failed","file":"src/core/ext/filters/client_channel/subchannel.cc","file_line":689,"grpc_status":14,"referenced_errors":[{"created":"@1543670679.734841131","description":"Handshake read failed","file":"src/core/lib/security/transport/security_handshaker.cc","file_line":321,"referenced_errors":[{"created":"@1543670679.734745641","description":"FD Shutdown","file":"src/core/lib/iomgr/lockfree_event.cc","file_line":194,"referenced_errors":[{"created":"@1543670679.734720568","description":"Handshake timed out","file":"src/core/lib/channel/handshaker.cc","file_line":290}]}]}]}]}]}"
+        status = StatusCode.UNKNOWN
+        details = "peer 0321ad07ca4a3e590830ea835844820ea08b0e8d2e7dbdc32aa98e801ab9fd862e is not online"
+        debug_error_string = "{"created":"@1547324967.579864705","description":"Error received from peer","file":"src/core/lib/surface/call.cc","file_line":1017,"grpc_message":"peer 0321ad07ca4a3e590830ea835844820ea08b0e8d2e7dbdc32aa98e801ab9fd862e is not online","grpc_status":2}"
+
+        grpc._channel._Rendezvous: <_Rendezvous of RPC that terminated with:
+        status = StatusCode.UNKNOWN
+        details = "not enough witness outputs to create funding transaction, need 0.01 BTC only have 0.00004855 BTC  available"
+        debug_error_string = "{"created":"@1547325316.221901640","description":"Error received from peer","file":"src/core/lib/surface/call.cc","file_line":1017,"grpc_message":"not enough witness outputs to create funding transaction, need 0.01 BTC only have 0.00004855 BTC  available","grpc_status":2}"
+
+        grpc._channel._Rendezvous: <_Rendezvous of RPC that terminated with:
+        status = StatusCode.UNKNOWN
+        details = "no policy for outgoing channel 613822157507592192 "
+        debug_error_string = "{"created":"@1547327609.724794018","description":"Error received from peer","file":"src/core/lib/surface/call.cc","file_line":1017,"grpc_message":"no policy for outgoing channel 613822157507592192 ","grpc_status":2}"
 
         '''
         pass
@@ -52,7 +62,9 @@ class LndAL(object):
         os.environ['GRPC_SSL_CIPHER_SUITES'] = 'HIGH+ECDSA'
         cert = open(system_config.tls_cert_directory + '/tls.cert', 'rb').read()
         ssl_creds = grpc.ssl_channel_credentials(cert)
-        channel = grpc.secure_channel(system_config.lnd_rpc_address + ':' + system_config.lnd_rpc_port, ssl_creds)
+        channel = grpc.secure_channel(system_config.lnd_rpc_address + ':' + system_config.lnd_rpc_port, ssl_creds,
+                                      options=[('grpc.max_send_message_length', 8000000),
+                                               ('grpc.max_receive_message_length', 8000000)])
         LndAL._stub = lnrpc.LightningStub(channel)
 
     @staticmethod
