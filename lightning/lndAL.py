@@ -63,8 +63,7 @@ class LndAL(object):
         cert = open(system_config.tls_cert_directory + '/tls.cert', 'rb').read()
         ssl_creds = grpc.ssl_channel_credentials(cert)
         channel = grpc.secure_channel(system_config.lnd_rpc_address + ':' + system_config.lnd_rpc_port, ssl_creds,
-                                      options=[('grpc.max_send_message_length', 8000000),
-                                               ('grpc.max_receive_message_length', 8000000)])
+                                      options=[('grpc.max_receive_message_length', 6000000)])
         LndAL._stub = lnrpc.LightningStub(channel)
 
     @staticmethod

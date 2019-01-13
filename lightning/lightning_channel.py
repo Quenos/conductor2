@@ -283,8 +283,11 @@ class Channels(object):
         ret_val = 0
         for c in Channels.channel_index:
             channel = Channels.find_by_chan_id(c)
-            if isinstance(channel[0], OpenChannel):
-                ret_val += channel[0].local_balance
+            try:
+                if isinstance(channel[0], OpenChannel):
+                    ret_val += channel[0].local_balance
+            except IndexError:
+                pass
         return ret_val
 
     @staticmethod
@@ -292,8 +295,11 @@ class Channels(object):
         ret_val = 0
         for c in Channels.channel_index:
             channel = Channels.find_by_chan_id(c)
-            if isinstance(channel[0], OpenChannel):
-                ret_val += channel[0].remote_balance
+            try:
+                if isinstance(channel[0], OpenChannel):
+                    ret_val += channel[0].remote_balance
+            except IndexError:
+                pass
         return ret_val
 
     @staticmethod
@@ -319,34 +325,6 @@ class Channels(object):
                                           base_fee_msat=base_fee_msat,
                                           fee_rate=fee_rate,
                                           time_lock_delta=time_lock_delta)
-
-    @staticmethod
-    def manage_channel_fees():
-        for channel_index in Channels.channel_index:
-            channel_list = Channels.find_by_chan_id(channel_index)
-            if channel_list:
-                channel = channel_list[0]
-                if channel.channel_type == "open_channel":
-                    if channel.remote_balance < Channels.small_remote_amt:
-                        lndAL.LndAL.update_channel_policy(chan_point=channel.channel_point,
-                                                          base_fee_msat=-5000,
-                                                          fee_rate=0.000001,
-                                                          time_lock_delta=10)
-                    elif channel.local_balance >= Channels.large_local_amt:
-                        lndAL.LndAL.update_channel_policy(chan_point=channel.channel_point,
-                                                          base_fee_msat=1000,
-                                                          fee_rate=0.000001,
-                                                          time_lock_delta=10)
-                    elif channel.local_balance >= Channels.med_local_amt:
-                        lndAL.LndAL.update_channel_policy(chan_point=channel.channel_point,
-                                                          base_fee_msat=2500,
-                                                          fee_rate=0.000001,
-                                                          time_lock_delta=10)
-                    else:
-                        lndAL.LndAL.update_channel_policy(chan_point=channel.channel_point,
-                                                          base_fee_msat=5000,
-                                                          fee_rate=0.000001,
-                                                          time_lock_delta=10)
 
     @staticmethod
     def find_by_chan_id(chan_id):

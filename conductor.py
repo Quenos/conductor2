@@ -25,6 +25,7 @@ from stylesheets.dark_theme import DarkTheme
 from config.config import SystemConfiguration
 from lightning import test_lnd_connection, lightning_channel
 from auto_policy import AutoPolicy
+from fwd_events_widget import FwdEventsWidget
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
@@ -119,6 +120,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.addDockWidget(QtCore.Qt.DockWidgetArea(QtCore.Qt.TopDockWidgetArea), self.dockBalanceWidget)
 
         self.auto_policy = AutoPolicy()
+        self.fwd_events_widget = FwdEventsWidget()
 
     def settings(self):
         self.settings_dialog = SettingsDialog()

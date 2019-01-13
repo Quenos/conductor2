@@ -15,7 +15,6 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from stylesheets.dark_theme import DarkTheme
-from lightning.lightning_node import Node
 
 
 class FoundNodesWidget(QtWidgets.QDialog):

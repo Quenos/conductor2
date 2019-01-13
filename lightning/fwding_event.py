@@ -32,10 +32,23 @@ class FwdingEvents(object):
 
     def __init__(self):
         self.forwarding_events = []
-        forwarding_history = LndAL.forwarding_history(end_time=int(time.time()), num_max_events=9999999)
+        self.time_last_fwd = 0
+        self.update_forwarding_events()
+
+    def update_forwarding_events(self):
+        forwarding_history = LndAL.forwarding_history(start_time=self.time_last_fwd + 1,
+                                                      end_time=int(time.time()),
+                                                      num_max_events=9999999)
         for fwding_event in forwarding_history.forwarding_events:
             e = FwdingEvent(fwding_event)
             self.forwarding_events.append(e)
+        if self.forwarding_events:
+            self.time_last_fwd = self.forwarding_events[len(self.forwarding_events) - 1].timestamp
+        else:
+            self.time_last_fwd = 0
+
+    def reverse_fwd_events(self):
+        return self.forwarding_events[::-1]
 
     def get_total_in_out_fee_amount(self, chan_id):
         in_amt = 0
